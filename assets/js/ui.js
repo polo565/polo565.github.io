@@ -118,6 +118,24 @@ function publicPath(fn, args) {
 /** The API function that answers a public read (may differ from the name the pages use). */
 function publicNet(fn) { return PUBLIC_READS[fn].net || fn; }
 
+/**
+ * True when the deployed API is older than this page (no api_getServicePage): service
+ * pages then come from api_getService, which counts the view itself.
+ */
+var publicLegacyApi = false;
+
+/** Calls the API for a public read, falling back to the older function name if needed. */
+function publicFetch(fn, args) {
+  var net = publicNet(fn);
+  if (net === fn) return apiCall(fn, args);
+  return apiCall(net, args).catch(function (err) {
+    if (!/^NOT_FOUND: Unknown function/.test(String(err && err.message))) throw err;
+    PUBLIC_READS[fn].net = null;
+    publicLegacyApi = true;
+    return apiCall(fn, args);
+  });
+}
+
 function publicStored(path) {
   try { var v = JSON.parse(localStorage.getItem(PUBLIC_STORE + path)); return v && v.d !== undefined ? v.d : null; } catch (e) { return null; }
 }
@@ -136,13 +154,13 @@ function publicForget(path) {
 }
 
 function publicRead(path, fn, args) {
-  if (publicGone[path]) return apiCall(publicNet(fn), args);
+  if (publicGone[path]) return publicFetch(fn, args);
   if (publicMem[path] !== undefined) { publicRevalidate(path, fn, args); return Promise.resolve(publicMem[path]); }
   var stored = publicStored(path);
   if (stored !== null) { publicMem[path] = stored; publicRevalidate(path, fn, args); return Promise.resolve(stored); }
   var network = function () {
     publicChecked[path] = true;
-    return apiCall(publicNet(fn), args).then(function (d) { publicStore(path, d); return d; });
+    return publicFetch(fn, args).then(function (d) { publicStore(path, d); return d; });
   };
   if (!PUBLIC_READS[fn].snapshot) return network();
   return fetch('/data/' + path + '.json', { credentials: 'omit' }).then(function (r) {
@@ -159,7 +177,7 @@ function publicRead(path, fn, args) {
 function publicRevalidate(path, fn, args) {
   if (publicChecked[path]) return;
   publicChecked[path] = true;
-  apiCall(publicNet(fn), args).then(function (fresh) {
+  publicFetch(fn, args).then(function (fresh) {
     var changed = JSON.stringify(fresh) !== JSON.stringify(publicMem[path]);
     publicStore(path, fresh);
     if (changed) window.dispatchEvent(new CustomEvent('hi:public-data', { detail: { path: path, data: fresh } }));

@@ -186,7 +186,7 @@ function renderService(slug) {
   loadData('svc:' + slug, function () { return api('api_getService', slug); }, function (d) {
     var s = d.service, c = d.category;
     // One view per page actually shown (not per redraw, copy or background check).
-    if (s && s.id && viewCountedRoute !== routeSeq) {
+    if (s && s.id && viewCountedRoute !== routeSeq && !publicLegacyApi) {
       viewCountedRoute = routeSeq;
       api('api_countView', s.id).catch(function () {});
     }
