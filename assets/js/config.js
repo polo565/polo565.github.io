@@ -8,5 +8,5 @@
  *   - NEW deployment → new URL → change it here.
  */
 window.HAMDI_CONFIG = {
-  API_URL: ''
+  API_URL: 'https://script.google.com/macros/s/AKfycbxp2S16sgQ1DFJfuXA0PpZRjRveazyH-K9VYlcKjYM6kGQ7uYHU7GtYe5yk4PqhJDVuug/exec'
 };
