@@ -108,6 +108,26 @@ tant qu'elles ne sont pas mises à jour vers https://polo565.github.io/.
 | logique serveur, sécurité, base | `apps-script/…` | `cd apps-script && clasp push --force`, puis **Déployer → Gérer les déploiements → ✏ → Nouvelle version** (l'URL ne change pas) |
 | contenu (services, FAQ, prix, coordonnées…) | rien : depuis l'**administration** | — |
 
+## Vitesse : copie publique et mémoire du navigateur
+
+Chaque appel à Apps Script prend 1 à 5 s (démarrage du script par Google). Pour que les pages
+s'affichent tout de suite, le contenu public est montré depuis la copie la plus rapide, puis
+vérifié auprès de l'API en arrière-plan (`assets/js/ui.js`) :
+
+1. mémoire de la visite → 2. mémoire du navigateur (visites précédentes) →
+3. `data/*.json` sur GitHub Pages → 4. l'API.
+
+Si l'API répond quelque chose de différent (modification faite dans l'admin), la page se met à
+jour toute seule quelques secondes après. L'API reste la seule source de vérité.
+
+`data/` contient l'accueil, le catalogue, le guide et les 13 catégories. Les pages de services
+n'y sont pas, car leur appel compte aussi une vue. Pour rafraîchir la copie, par exemple après
+de grosses modifications dans l'admin :
+```bash
+node tools/snapshot.js && git add data && git commit -m "Update public content snapshot" && git push
+```
+Une copie ancienne n'est jamais affichée longtemps : la réponse de l'API la remplace.
+
 ## Applications Android (Flutter)
 
 Deux petites applications qui affichent le site dans une WebView ; aucune logique ni secret dedans.
@@ -154,6 +174,8 @@ tools/test/                    tests du backend + simulateurs Google
 tools/dev-server.js            serveur de test local
 tools/smoke-test.js            test navigateur
 tools/stamp.js                 met à jour les ?v= anti-cache
+tools/snapshot.js              copie publique du contenu (data/)
+data/                          copie publique : accueil, catalogue, guide, catégories
 apps/                          applications Android (Flutter)
 404.html, robots.txt, .nojekyll
 ```

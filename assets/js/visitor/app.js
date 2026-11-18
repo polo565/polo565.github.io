@@ -204,6 +204,25 @@ function initShell() {
     .catch(function (e) { if (/SESSION_EXPIRED/.test((e && e.message) || '')) setVisitorToken(''); });
 }
 
+/*
+ * Newer public content arrived from the API (see publicRevalidate in ui.js): update the
+ * page caches and redraw the current page in place, unless the visitor is filling a form.
+ */
+var PUBLIC_PAGE_KEYS = { home: 'home', catalog: 'catalog', guide: 'guide' };
+window.addEventListener('hi:public-data', function (e) {
+  var path = e.detail.path, data = e.detail.data;
+  var key = PUBLIC_PAGE_KEYS[path] || (path.indexOf('category/') === 0 ? 'cat:' + path.slice(9) : 'svc:' + path.slice(8));
+  if (data === null) delete PAGE_CACHE[key]; else PAGE_CACHE[key] = data;
+  if (path === 'home') state.home = data;
+  var page = (routeHash() || '#/').replace(/^#\/?/, '').split('/')[0];
+  if (['request', 'track', 'account', 'search', 'guide'].indexOf(page) >= 0) return;
+  var a = document.activeElement;
+  if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
+  var y = window.scrollY;
+  route();
+  window.scrollTo(0, y);
+});
+
 var APP_LANGS = ['ar', 'fr', 'en'];
 setLang(detectLang());
 initShell();

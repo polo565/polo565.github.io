@@ -54,6 +54,12 @@ function $$(sel, root) { return Array.prototype.slice.call((root || document).qu
  */
 function api(fn) {
   var args = Array.prototype.slice.call(arguments, 1);
+  var path = publicPath(fn, args);
+  return path ? publicRead(path, fn, args) : apiCall(fn, args);
+}
+
+/** The network call itself (see api()). */
+function apiCall(fn, args) {
   var url = window.HAMDI_CONFIG && HAMDI_CONFIG.API_URL;
   if (!url) {
     console.error('HAMDI ITALIE: API_URL is empty in assets/js/config.js');
@@ -75,6 +81,92 @@ function api(fn) {
     // Network failure, or the API is not deployed (no CORS headers → TypeError).
     var msg = String((err && err.message) || err || '');
     throw new Error(/^[A-Z][A-Z_]*: /.test(msg) ? msg : 'INTERNAL: ' + msg);
+  });
+}
+
+/*
+ * Public content (home, catalog, guide, category and service pages) is shown at once
+ * from the fastest copy available, then checked against the API in the background:
+ *   1. memory (this visit)   2. this browser (localStorage, earlier visits)
+ *   3. data/*.json on GitHub Pages (written by tools/snapshot.js; not for service
+ *      pages, whose API call also counts the view)
+ *   4. the API.
+ * When the API answers with something different, the copy is replaced and the event
+ * "hi:public-data" (detail: {path, data}) lets the page redraw. The API stays the only
+ * source of truth: a copy is only ever shown until the API has answered once.
+ */
+var PUBLIC_READS = {
+  api_getHome: { path: 'home', snapshot: true },
+  api_getCatalog: { path: 'catalog', snapshot: true },
+  api_getGuide: { path: 'guide', snapshot: true },
+  api_getCategory: { path: 'category/', snapshot: true, arg: true },
+  api_getService: { path: 'service/', snapshot: false, arg: true }
+};
+var PUBLIC_STORE = 'hi_pub_v1:';
+var publicMem = {};
+var publicChecked = {};
+var publicGone = {};  // removed since the copies were made: always ask the API
+
+function publicPath(fn, args) {
+  var def = PUBLIC_READS[fn];
+  if (!def) return null;
+  if (!def.arg) return args.length ? null : def.path;
+  var slug = args.length === 1 ? String(args[0]) : '';
+  return /^[a-z0-9][a-z0-9-]{0,80}$/.test(slug) ? def.path + slug : null;
+}
+
+function publicStored(path) {
+  try { var v = JSON.parse(localStorage.getItem(PUBLIC_STORE + path)); return v && v.d !== undefined ? v.d : null; } catch (e) { return null; }
+}
+
+function publicStore(path, data) {
+  publicMem[path] = data;
+  try { localStorage.setItem(PUBLIC_STORE + path, JSON.stringify({ t: Date.now(), d: data })); } catch (e) {
+    // Storage full or blocked: drop older copies, the site still works from the API.
+    try { Object.keys(localStorage).forEach(function (k) { if (k.indexOf(PUBLIC_STORE) === 0) localStorage.removeItem(k); }); } catch (x) {}
+  }
+}
+
+function publicForget(path) {
+  delete publicMem[path];
+  try { localStorage.removeItem(PUBLIC_STORE + path); } catch (e) {}
+}
+
+function publicRead(path, fn, args) {
+  if (publicGone[path]) return apiCall(fn, args);
+  if (publicMem[path] !== undefined) { publicRevalidate(path, fn, args); return Promise.resolve(publicMem[path]); }
+  var stored = publicStored(path);
+  if (stored !== null) { publicMem[path] = stored; publicRevalidate(path, fn, args); return Promise.resolve(stored); }
+  var network = function () {
+    publicChecked[path] = true;
+    return apiCall(fn, args).then(function (d) { publicStore(path, d); return d; });
+  };
+  if (!PUBLIC_READS[fn].snapshot) return network();
+  return fetch('/data/' + path + '.json', { credentials: 'omit' }).then(function (r) {
+    if (!r.ok) throw new Error('no snapshot');
+    return r.json();
+  }).then(function (d) {
+    publicMem[path] = d;
+    publicRevalidate(path, fn, args);
+    return d;
+  }, network);
+}
+
+/** Asks the API once per visit; replaces the copy and notifies the page if it changed. */
+function publicRevalidate(path, fn, args) {
+  if (publicChecked[path]) return;
+  publicChecked[path] = true;
+  apiCall(fn, args).then(function (fresh) {
+    var changed = JSON.stringify(fresh) !== JSON.stringify(publicMem[path]);
+    publicStore(path, fresh);
+    if (changed) window.dispatchEvent(new CustomEvent('hi:public-data', { detail: { path: path, data: fresh } }));
+  }, function (err) {
+    // Removed or unpublished since the copy was made: forget it and let the page redraw.
+    if (/^NOT_FOUND/.test(String(err && err.message))) {
+      publicForget(path);
+      publicGone[path] = true;
+      window.dispatchEvent(new CustomEvent('hi:public-data', { detail: { path: path, data: null } }));
+    }
   });
 }
 
