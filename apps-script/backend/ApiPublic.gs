@@ -191,6 +191,31 @@ function api_getService(slug) {
   });
 }
 
+/**
+ * Service page WITHOUT counting a view: used by the website (which counts with
+ * api_countView when the page is actually shown) and by the public content copy
+ * (tools/snapshot.js), so copies and background checks never inflate the statistics.
+ */
+function api_getServicePage(slug) {
+  return handle_(function () {
+    slug = validateField_('slug', slug, { type: 'slug', required: true });
+    return cachedPublic_('svc:' + slug, CACHE_TTL.PUBLIC_CONTENT, function () { return servicePage_(slug); });
+  });
+}
+
+/**
+ * Counts one view of a service page (shown to a visitor). Cheap: no sheet is read here;
+ * unknown ids are ignored when the counts are written (views_flush_).
+ */
+function api_countView(serviceId) {
+  return handle_(function () {
+    serviceId = String(serviceId || '');
+    if (!/^SRV-[A-Z0-9]{6,20}$/.test(serviceId)) throw AppError_('VALIDATION', 'Bad request.');
+    views_bump_(serviceId);
+    return true;
+  });
+}
+
 function servicePage_(slug) {
     var s = db_findOne_('Services', function (x) { return x.slug === slug && toBool_(x.published); });
     if (!s) throw AppError_('NOT_FOUND', 'Not found.');

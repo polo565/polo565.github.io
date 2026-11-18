@@ -120,9 +120,11 @@ vérifié auprès de l'API en arrière-plan (`assets/js/ui.js`) :
 Si l'API répond quelque chose de différent (modification faite dans l'admin), la page se met à
 jour toute seule quelques secondes après. L'API reste la seule source de vérité.
 
-`data/` contient l'accueil, le catalogue, le guide et les 13 catégories. Les pages de services
-n'y sont pas, car leur appel compte aussi une vue. Pour rafraîchir la copie, par exemple après
-de grosses modifications dans l'admin :
+`data/` contient l'accueil, le catalogue, le guide, les 13 catégories et les pages de services.
+Les pages de services sont lues avec `api_getServicePage`, qui ne compte pas de vue ; le site
+compte une vue (`api_countView`) chaque fois qu'une page de service est vraiment affichée.
+Pas de mise à jour automatique (pas de commits automatiques) : pour rafraîchir la copie, par
+exemple après de grosses modifications dans l'admin :
 ```bash
 node tools/snapshot.js && git add data && git commit -m "Update public content snapshot" && git push
 ```

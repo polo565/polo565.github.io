@@ -82,6 +82,7 @@ function loadData(key, call, render) {
   }).catch(function (e) { if (currentLoad === token) errorPage(e, function () { loadData(key, call, render); }); });
 }
 var currentLoad = null;
+var viewCountedRoute = -1;
 
 function crumbs(items) {
   return '<nav class="crumbs" aria-label="breadcrumb"><a href="#/">' + esc(t('nav.home')) + '</a>' + items.map(function (i) {
@@ -184,6 +185,11 @@ function priceRow(label, amount, currency) {
 function renderService(slug) {
   loadData('svc:' + slug, function () { return api('api_getService', slug); }, function (d) {
     var s = d.service, c = d.category;
+    // One view per page actually shown (not per redraw, copy or background check).
+    if (s && s.id && viewCountedRoute !== routeSeq) {
+      viewCountedRoute = routeSeq;
+      api('api_countView', s.id).catch(function () {});
+    }
     var byLang = {};
     d.content.forEach(function (x) { byLang[x.lang] = x; });
     var content = byLang[currentLang] || byLang[SUPPORTED_LANGS.filter(function (l) { return byLang[l]; })[0]] || null;

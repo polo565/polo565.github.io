@@ -88,8 +88,7 @@ function apiCall(fn, args) {
  * Public content (home, catalog, guide, category and service pages) is shown at once
  * from the fastest copy available, then checked against the API in the background:
  *   1. memory (this visit)   2. this browser (localStorage, earlier visits)
- *   3. data/*.json on GitHub Pages (written by tools/snapshot.js; not for service
- *      pages, whose API call also counts the view)
+ *   3. data/*.json on GitHub Pages (written by tools/snapshot.js)
  *   4. the API.
  * When the API answers with something different, the copy is replaced and the event
  * "hi:public-data" (detail: {path, data}) lets the page redraw. The API stays the only
@@ -100,7 +99,8 @@ var PUBLIC_READS = {
   api_getCatalog: { path: 'catalog', snapshot: true },
   api_getGuide: { path: 'guide', snapshot: true },
   api_getCategory: { path: 'category/', snapshot: true, arg: true },
-  api_getService: { path: 'service/', snapshot: false, arg: true }
+  // The page is read without counting a view; the page counts it with api_countView.
+  api_getService: { path: 'service/', snapshot: true, arg: true, net: 'api_getServicePage' }
 };
 var PUBLIC_STORE = 'hi_pub_v1:';
 var publicMem = {};
@@ -114,6 +114,9 @@ function publicPath(fn, args) {
   var slug = args.length === 1 ? String(args[0]) : '';
   return /^[a-z0-9][a-z0-9-]{0,80}$/.test(slug) ? def.path + slug : null;
 }
+
+/** The API function that answers a public read (may differ from the name the pages use). */
+function publicNet(fn) { return PUBLIC_READS[fn].net || fn; }
 
 function publicStored(path) {
   try { var v = JSON.parse(localStorage.getItem(PUBLIC_STORE + path)); return v && v.d !== undefined ? v.d : null; } catch (e) { return null; }
@@ -133,13 +136,13 @@ function publicForget(path) {
 }
 
 function publicRead(path, fn, args) {
-  if (publicGone[path]) return apiCall(fn, args);
+  if (publicGone[path]) return apiCall(publicNet(fn), args);
   if (publicMem[path] !== undefined) { publicRevalidate(path, fn, args); return Promise.resolve(publicMem[path]); }
   var stored = publicStored(path);
   if (stored !== null) { publicMem[path] = stored; publicRevalidate(path, fn, args); return Promise.resolve(stored); }
   var network = function () {
     publicChecked[path] = true;
-    return apiCall(fn, args).then(function (d) { publicStore(path, d); return d; });
+    return apiCall(publicNet(fn), args).then(function (d) { publicStore(path, d); return d; });
   };
   if (!PUBLIC_READS[fn].snapshot) return network();
   return fetch('/data/' + path + '.json', { credentials: 'omit' }).then(function (r) {
@@ -156,7 +159,7 @@ function publicRead(path, fn, args) {
 function publicRevalidate(path, fn, args) {
   if (publicChecked[path]) return;
   publicChecked[path] = true;
-  apiCall(fn, args).then(function (fresh) {
+  apiCall(publicNet(fn), args).then(function (fresh) {
     var changed = JSON.stringify(fresh) !== JSON.stringify(publicMem[path]);
     publicStore(path, fresh);
     if (changed) window.dispatchEvent(new CustomEvent('hi:public-data', { detail: { path: path, data: fresh } }));

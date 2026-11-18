@@ -26,7 +26,9 @@ function check(name, ok, info) {
   const p = await vctx.newPage();
   const errs = [];
   p.on('pageerror', e => errs.push(e.message));
-  p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+  // A missing public copy (data/…json → 404) is expected for new pages: the API answers instead.
+  p.on('console', m => { if (m.type() === 'error' && !/status of 404/.test(m.text())) errs.push(m.text()); });
+  p.on('response', r => { if (r.status() === 404 && !/\/data\/.+\.json$/.test(new URL(r.url()).pathname)) errs.push('404 ' + r.url()); });
   await p.goto(SITE + '/');
   await p.waitForSelector('a[href^="#/category/"]', { timeout: 20000 });
   const cats = await p.$$eval('a[href^="#/category/"]', a => new Set(a.map(x => x.getAttribute('href'))).size);

@@ -105,6 +105,25 @@ test('service views are counted in cache and flushed to the sheet', () => {
   assert.strictEqual(ctx.views_flush_(), 0);
 });
 
+test('service page without counting; views counted only by api_countView', () => {
+  newExecution(ctx);
+  ctx.views_flush_();
+  const before = Number(ctx.db_findOne_('Services', s => s.slug === 'spid').view_count || 0);
+  const page = ctx.api_getServicePage('spid');
+  assert.strictEqual(page.service.slug, 'spid');
+  ctx.api_getServicePage('spid'); ctx.api_getServicePage('spid');
+  assert.strictEqual(ctx.views_flush_(), 0, 'reading the page counts nothing');
+  assert.strictEqual(ctx.api_countView(page.service.id), true);
+  ctx.api_countView('SRV-ZZZZZZZZZZ'); // unknown id: ignored when flushing
+  newExecution(ctx);
+  ctx.views_flush_();
+  assert.strictEqual(Number(ctx.db_findOne_('Services', s => s.slug === 'spid').view_count), before + 1);
+  ['', 'x', 'SRV-', 'SRV-abc', '<script>', 'SRV-ZZZZZZZZZZ\n', { id: 1 }].forEach(bad =>
+    expectError(() => ctx.api_countView(bad), 'VALIDATION'));
+  expectError(() => ctx.api_getServicePage('does-not-exist'), 'NOT_FOUND');
+  expectError(() => ctx.api_getServicePage('../x'), 'VALIDATION');
+});
+
 test('home serves DB content after setup', () => {
   newExecution(ctx);
   const h = ctx.api_getHome();

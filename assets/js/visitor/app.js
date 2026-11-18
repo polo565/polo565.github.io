@@ -160,7 +160,10 @@ function loadHome() {
     });
 }
 
+var routeSeq = 0;          // one number per navigation (a redraw in place keeps it)
+var redrawingInPlace = false;
 function route() {
+  if (!redrawingInPlace) routeSeq++;
   var hash = routeHash() || '#/';
   if (hash === '#contact') { var c = $('#contact'); if (c) { c.scrollIntoView(); return; } hash = '#/'; }
   var parts = hash.replace(/^#\/?/, '').split('/');
@@ -189,7 +192,12 @@ function initShell() {
   var sel = $('#lang');
   sel.innerHTML = APP_LANGS.map(function (l) { return '<option value="' + l + '">' + esc(LANG_NAMES[l]) + '</option>'; }).join('');
   sel.value = currentLang;
-  sel.onchange = function () { setLang(sel.value); route(); };
+  sel.onchange = function () {
+    setLang(sel.value);
+    // Same page in another language: a redraw, not a new visit (no extra view counted).
+    redrawingInPlace = true;
+    try { route(); } finally { redrawingInPlace = false; }
+  };
   $('#lang-icon').innerHTML = icon('globe');
   $('#account-link').innerHTML = icon('user');
   $('#menu-btn').innerHTML = icon('menu');
@@ -219,7 +227,8 @@ window.addEventListener('hi:public-data', function (e) {
   var a = document.activeElement;
   if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
   var y = window.scrollY;
-  route();
+  redrawingInPlace = true;
+  try { route(); } finally { redrawingInPlace = false; }
   window.scrollTo(0, y);
 });
 
