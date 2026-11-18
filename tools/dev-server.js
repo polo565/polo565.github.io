@@ -1,37 +1,28 @@
 #!/usr/bin/env node
 /**
- * Local test of the GitHub Pages site against the REAL backend code, without deploying.
+ * Local test of the whole project (site + backend) without deploying anything.
  *
- *   node tools/dev-server.js <path to hamdi_italia> [sitePort=8810] [apiPort=8812]
+ *   node tools/dev-server.js [sitePort=8810] [apiPort=8812]
  *
- * - http://localhost:<sitePort>/      this repository, served as GitHub Pages would.
- * - http://localhost:<apiPort>/exec   the backend (*.gs from the hamdi_italia checkout +
- *   apps-script/HttpApi.gs) running in Node on the in-memory Apps Script fakes of
- *   hamdi_italia/scripts/test. Like Apps Script, POST /exec answers with a 302 to a
- *   one-time GET URL that carries Access-Control-Allow-Origin: *, so the browser does the
- *   same cross-origin requests as on the live site.
- * Data is in memory and lost on restart. The admin login is printed at start (localhost only).
- * Nothing from the backend is written into this repository.
+ * - http://127.0.0.1:<sitePort>/      this repository, served as GitHub Pages would.
+ * - http://127.0.0.1:<apiPort>/exec   the backend (apps-script/**.gs) running in Node on the
+ *   in-memory Google fakes of tools/test. Like Apps Script, POST /exec answers with a 302
+ *   to a one-time GET URL, both carrying Access-Control-Allow-Origin: *, so the browser
+ *   makes the same cross-origin requests as with the real deployment.
+ * Data is in memory and lost on restart. A local admin login is printed at start.
  */
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const vm = require('vm');
 const crypto = require('crypto');
 
-const src = process.argv[2];
-if (!src) { console.error('Usage: node tools/dev-server.js <path to hamdi_italia> [sitePort] [apiPort]'); process.exit(1); }
-const SITE_PORT = Number(process.argv[3] || 8810);
-const API_PORT = Number(process.argv[4] || 8812);
+const SITE_PORT = Number(process.argv[2] || 8810);
+const API_PORT = Number(process.argv[3] || 8812);
 const ROOT = path.resolve(__dirname, '..');
-const { loadBackend, newExecution } = require(path.resolve(src, 'scripts/test/load-backend.js'));
+const { loadBackend, newExecution } = require('./test/load-backend');
 
 const { ctx } = loadBackend({ superAdminEmail: 'admin@example.test' });
-ctx.ContentService = {
-  MimeType: { JSON: 'application/json' },
-  createTextOutput(text) { return { text, mime: 'text/plain', setMimeType(m) { this.mime = m; return this; } }; },
-};
-vm.runInContext(fs.readFileSync(path.join(ROOT, 'apps-script/HttpApi.gs'), 'utf8'), ctx, { filename: 'HttpApi.gs' });
+
 const report = ctx.setup();
 newExecution(ctx);
 const temp = report.find(l => l.includes('TEMPORARY PASSWORD')).split(': ').pop();

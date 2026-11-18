@@ -1,17 +1,13 @@
 /**
- * HAMDI ITALIE — JSON API for the website hosted on GitHub Pages (polo565.github.io).
- *
- * TO INSTALL: add this file to the Apps Script project (editor → Files → + → Script,
- * name it "HttpApi", paste this content), then Deploy → Manage deployments → ✏ Edit →
- * Version: New version → Deploy. The /exec URL does not change.
+ * HAMDI ITALIE — JSON API used by the website on GitHub Pages (https://polo565.github.io/).
  *
  * Request : POST <exec URL>, body (text/plain) = {"fn": "api_getHome", "args": []}
  * Response: {"ok": true, "result": …}  or  {"ok": false, "error": "CODE: message"}
  *
- * It exposes exactly the api_* functions that the HtmlService pages already call with
- * google.script.run — nothing more. Every check (admin session, roles, visitor tokens,
- * tracking codes, rate limits, uploads) stays inside those functions, on the server.
- * doGet (the original HtmlService site and the Android apps) is not affected.
+ * Only api_* functions can be called. Every check (admin session, roles, visitor tokens,
+ * tracking codes, rate limits, uploads) is done inside those functions, on the server.
+ * text/plain avoids a CORS preflight; Apps Script answers with a redirect to
+ * script.googleusercontent.com, which allows any origin to read the JSON.
  */
 
 var HTTP_API_FN_ = /^api_[A-Za-z0-9]+(_[A-Za-z0-9]+)*$/;   // never a private name (trailing _)

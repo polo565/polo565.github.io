@@ -1,91 +1,119 @@
-# HAMDI ITALIE — site web sur GitHub Pages
+# HAMDI ITALIE
 
-Le site HAMDI ITALIE (visiteurs + administration) est hébergé ici, en fichiers statiques
-(HTML, CSS, JavaScript), à l'adresse **https://polo565.github.io/**.
+Plateforme d'information et d'assistance pour les immigrés et résidents étrangers en Italie
+(ar / fr / en). **Tout le projet est dans ce dépôt** :
 
-| Adresse | Page |
+| Partie | Où | Hébergée par |
+|---|---|---|
+| Site visiteur | `index.html`, `assets/` | **GitHub Pages** → https://polo565.github.io/ |
+| Administration | `admin/index.html`, `assets/` | **GitHub Pages** → https://polo565.github.io/admin/ |
+| Backend (API) | `apps-script/` | **Google Apps Script** (projet `15qMipz3…`), lié au Google Sheet et au Drive |
+| Tests | `tools/` | en local (Node) |
+
+```
+navigateur ──► polo565.github.io  (pages, styles, scripts)
+                    │  POST JSON {fn, args}
+                    ▼
+          Apps Script …/exec  (apps-script/backend/HttpApi.gs → fonctions api_*)
+                    ├── Google Sheets : base de données
+                    └── Google Drive  : documents, images, pièces jointes
+```
+
+Pourquoi deux hébergeurs : GitHub Pages ne sert que des fichiers fixes. Il ne peut ni lire un
+Google Sheet, ni garder un mot de passe, ni stocker en privé les demandes des visiteurs.
+Apps Script fait ce travail **sans afficher aucune page** : c'est uniquement l'API.
+
+Ce dépôt est **public** : il ne contient aucun secret, aucun identifiant de Sheet ou de dossier
+Drive. Ces valeurs sont dans les *propriétés du script* (Apps Script), jamais dans le code.
+
+---
+
+## Mise en service (propriétaire)
+
+### 1. Propriétés du nouveau projet Apps Script — AVANT toute autre chose
+Ancien projet → ⚙ **Paramètres du projet** → *Propriétés du script* : noter **toutes** les valeurs.
+Nouveau projet (`15qMipz3…`) → ⚙ **Paramètres du projet** → *Propriétés du script* : les recréer
+à l'identique, en particulier :
+
+| Propriété | Pourquoi |
 |---|---|
-| `https://polo565.github.io/` | site visiteur (ar / fr / en, RTL pour l'arabe) |
-| `https://polo565.github.io/#/service/<slug>` | lien direct vers un service (aussi `#/services`, `#/guide`, `#/track`…) |
-| `https://polo565.github.io/admin/` | administration (non indexée par les moteurs de recherche) |
+| `PASSWORD_PEPPER` | **indispensable** : sans la même valeur, aucun mot de passe (admin, visiteur) ne fonctionne |
+| `HASH_ITERATIONS` | réglage du hachage des mots de passe |
+| `SPREADSHEET_ID` | le Google Sheet (base de données) |
+| `DRIVE_ROOT_FOLDER_ID` | le dossier Drive HAMDI_ITALIE |
+| `PRIVATE_UPLOADS_FOLDER_ID` | dossier privé des pièces jointes |
+| `SUPER_ADMIN_EMAIL` | votre compte Google (propriétaire) |
+| `OTP_SMS_PROVIDER`, `OTP_SMS_API_KEY` | seulement s'ils existent |
 
-## Architecture
+`setup()` refuse de démarrer si `PASSWORD_PEPPER` manque alors que le Sheet a déjà des
+administrateurs : il ne crée jamais un nouveau « pepper » par-dessus vos comptes.
 
+### 2. Envoyer le backend dans le nouveau projet (clasp)
+```bash
+npm install -g @google/clasp      # une seule fois
+clasp login                       # une seule fois (compte propriétaire)
+cd apps-script
+clasp push --force                # remplace TOUS les fichiers du projet 15qMipz3… par ceux de apps-script/
 ```
-navigateur ──► polo565.github.io (GitHub Pages : pages, styles, scripts)
-     │
-     └── fetch POST JSON ──► Google Apps Script …/exec  (apps-script/HttpApi.gs → api_* existants)
-                                   │
-                                   ├── Google Sheets (base de données)
-                                   └── Google Drive (documents, pièces jointes)
+(Activer d'abord l'API Apps Script : https://script.google.com/home/usersettings)
+
+Les anciennes pages HTML copiées avec le projet sont supprimées : ce projet n'affiche plus de pages.
+
+### 3. Initialiser puis déployer
+1. Éditeur Apps Script → fonction **`setup`** → **Exécuter** (autoriser). Elle ajoute seulement
+   ce qui manque (tâche quotidienne de confidentialité, colonnes manquantes) et ne modifie
+   aucune donnée existante.
+2. **Déployer → Nouveau déploiement** → type **Application Web** →
+   *Exécuter en tant que* : **Moi** — *Qui a accès* : **Tout le monde** → **Déployer**.
+3. Copier l'URL `https://script.google.com/macros/s/…/exec`.
+   L'ouvrir dans le navigateur doit afficher `{"app":"HAMDI ITALIE","api":"ok",…}`.
+
+### 4. Brancher le site sur l'API
+Dans `assets/js/config.js`, coller l'URL dans `API_URL`, puis :
+```bash
+node tools/stamp.js     # met à jour les ?v= (évite l'ancien cache)
+git commit -am "Set API URL" && git push
 ```
 
-GitHub Pages ne peut héberger que des fichiers statiques : il ne peut ni lire le Google Sheet
-ni garder un secret. Les données, les comptes, les mots de passe, les rôles et Drive restent donc
-dans le projet Apps Script existant, qui sert d'**API**. Toute vérification (session admin, rôles,
-code de suivi, limites, contrôle des fichiers) reste faite sur le serveur.
+### 5. Activer GitHub Pages
+Dépôt → **Settings → Pages** → *Source* : **Deploy from a branch** → branche par défaut,
+dossier **/ (root)** → **Save**. Le site est en ligne après une ou deux minutes.
 
-Ce dépôt est **public** : il ne contient aucun code backend, aucun identifiant de Sheet ou de
-dossier Drive, aucun secret. L'URL `/exec` (déjà publique) est le seul lien vers le backend.
+### 6. Supprimer l'ancien projet Apps Script
+Seulement après avoir vérifié que la connexion admin fonctionne sur
+https://polo565.github.io/admin/. Le Sheet et le Drive ne sont pas touchés.
+Les applications Android (Flutter) ouvraient l'ancien projet : elles ne fonctionneront plus
+tant qu'elles ne sont pas mises à jour vers https://polo565.github.io/.
 
-## ⚠️ Mise en service (à faire une fois, par le propriétaire)
+---
 
-### 1. Ajouter l'API au projet Apps Script
-1. Ouvrir le projet Apps Script (script.google.com → projet HAMDI ITALIE).
-2. **Fichiers → + → Script**, nom : `HttpApi`. Coller le contenu de [`apps-script/HttpApi.gs`](apps-script/HttpApi.gs). Enregistrer.
-3. **Déployer → Gérer les déploiements → ✏ Modifier** le déploiement existant →
-   *Version* : **Nouvelle version** → **Déployer**. L'URL `/exec` ne change pas.
+## Modifier le projet
 
-Tant que cette étape n'est pas faite, le site affiche « Something went wrong. Please try again. »
-(l'URL `/exec` ne sait pas encore répondre au site).
+| Je veux modifier… | Fichier(s) | Ensuite |
+|---|---|---|
+| textes de l'interface | `assets/js/i18n.js`, `assets/js/visitor/strings.js`, `assets/js/admin/labels.js` | `node tools/stamp.js`, commit, push |
+| apparence | `assets/css/…` | idem |
+| pages / comportement | `assets/js/…`, `index.html`, `admin/index.html` | idem |
+| logique serveur, sécurité, base | `apps-script/…` | `cd apps-script && clasp push --force`, puis **Déployer → Gérer les déploiements → ✏ → Nouvelle version** (l'URL ne change pas) |
+| contenu (services, FAQ, prix, coordonnées…) | rien : depuis l'**administration** | — |
 
-> Si vous publiez plus tard le projet avec `clasp push` depuis le dépôt `hamdi_italia`, clasp
-> remplace tous les fichiers du projet : `HttpApi.gs` serait supprimé et le site cesserait de
-> fonctionner. Ajoutez alors aussi `HttpApi.gs` dans `hamdi_italia/google-apps-script/`, ou
-> recollez-le dans l'éditeur et republiez une version.
-
-### 2. Activer GitHub Pages
-Settings → **Pages** → *Build and deployment* → Source : **Deploy from a branch** →
-branche `ccr-70deccce-a0w3wk` (ou `main` après fusion), dossier **/ (root)** → **Save**.
-Le site apparaît sur https://polo565.github.io/ après une ou deux minutes.
+## Tester en local (sans rien déployer)
+```bash
+node tools/test/run-tests.js      # 51 tests du backend (sécurité, demandes, paiements, RGPD, API…)
+node tools/dev-server.js          # site http://127.0.0.1:8810 + API locale ; affiche un login admin de test
+node tools/smoke-test.js          # (autre terminal) test navigateur visiteur + admin, Playwright
+```
+Le serveur local exécute le vrai code de `apps-script/` dans Node, avec des simulateurs Google en mémoire.
 
 ## Fichiers
-
-| Chemin | Rôle |
-|---|---|
-| `index.html`, `admin/index.html` | les deux pages |
-| `assets/css/`, `assets/js/` | styles et scripts (un fichier par module, `?v=<hash>` contre le cache) |
-| `assets/js/config.js` | **seul endroit** où se trouve l'URL de l'API (`API_URL`) |
-| `apps-script/HttpApi.gs` | le fichier à ajouter au projet Apps Script (voir ci-dessus) |
-| `tools/convert.js` | régénère le site à partir du frontend Apps Script de `hamdi_italia` |
-| `tools/dev-server.js` | test local complet, sans déploiement (backend réel en mémoire) |
-| `tools/smoke-test.js` | test navigateur (visiteur + admin) |
-| `404.html`, `robots.txt`, `.nojekyll` | redirection des adresses inconnues, exclusion de `/admin/`, fichiers servis tels quels |
-
-## Changer l'URL Apps Script
-- **Nouvelle version** du même déploiement : rien à faire.
-- **Nouveau déploiement** (nouvelle URL `/exec`) : modifier `API_URL` dans `assets/js/config.js`,
-  relancer `node tools/convert.js <chemin vers hamdi_italia>` (met à jour le `?v=`), commit, push.
-
-## Mettre à jour le site après une modification du frontend dans `hamdi_italia`
-```bash
-node tools/convert.js ../hamdi_italia      # régénère index.html, admin/, assets/
 ```
-Le convertisseur échoue clairement si le code d'origine a changé à un endroit qu'il adapte
-(`api()` et la navigation dans `shared/Ui.html`).
-
-## Tester en local
-```bash
-node tools/dev-server.js ../hamdi_italia   # site :8810, API :8812, affiche un login admin local
-node tools/smoke-test.js                    # dans un autre terminal (Playwright)
+index.html, admin/index.html   les deux pages
+assets/js/config.js            URL de l'API (seul réglage du site)
+assets/js/*.js, assets/css/    interface (design neumorphique, ar/fr/en, RTL)
+apps-script/                   backend : Code.gs (statut), backend/HttpApi.gs (API JSON), backend/*.gs, config/*.gs
+tools/test/                    tests du backend + simulateurs Google
+tools/dev-server.js            serveur de test local
+tools/smoke-test.js            test navigateur
+tools/stamp.js                 met à jour les ?v= anti-cache
+404.html, robots.txt, .nojekyll
 ```
-`dev-server.js` charge le backend `.gs` de `hamdi_italia` dans Node (avec les simulateurs
-Google du dépôt) et imite la réponse de Google (redirection 302 + `Access-Control-Allow-Origin: *`).
-Rien du backend n'est écrit dans ce dépôt.
-
-## Limites connues
-- Le site dépend de l'API Apps Script : mêmes quotas Google qu'avant.
-- La langue, la session visiteur et la progression du guide sont stockées dans le navigateur
-  pour `polo565.github.io` : elles sont distinctes de celles de l'ancienne adresse `script.google.com`.
-- Les applications Android (Flutter) continuent d'ouvrir l'ancienne adresse `/exec`, qui reste
-  en service (`doGet` n'est pas modifié).
