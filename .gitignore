@@ -1,0 +1,7 @@
+# Flutter / Android build outputs
+apps/**/build/
+apps/**/.dart_tool/
+apps/**/android/key.properties
+*.jks
+*.keystore
+*.apk

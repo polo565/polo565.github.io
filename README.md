@@ -8,6 +8,7 @@ Plateforme d'information et d'assistance pour les immigrés et résidents étran
 | Site visiteur | `index.html`, `assets/` | **GitHub Pages** → https://polo565.github.io/ |
 | Administration | `admin/index.html`, `assets/` | **GitHub Pages** → https://polo565.github.io/admin/ |
 | Backend (API) | `apps-script/` | **Google Apps Script** (projet `15qMipz3…`), lié au Google Sheet et au Drive |
+| Applications Android | `apps/visitor`, `apps/admin`, `apps/shared` | Flutter (WebView du site GitHub Pages) |
 | Tests | `tools/` | en local (Node) |
 
 ```
@@ -29,8 +30,8 @@ Drive. Ces valeurs sont dans les *propriétés du script* (Apps Script), jamais 
 ## État (2026-11-18)
 - ✅ Site en ligne sur GitHub Pages, branché sur l'API (déploiement `AKfycbxp2S…`, version 3).
 - ✅ Vérifié en ligne : accueil (ar, RTL), 13 catégories, 132 services, guide, recherche, connexion admin (propriétaire).
-- ⏳ `SUPER_ADMIN_EMAIL` à ajouter dans les propriétés du script ; ancien projet Apps Script à supprimer ;
-  applications Android à pointer vers https://polo565.github.io/.
+- ✅ Applications Android 2.0.0 : ouvrent https://polo565.github.io/ (visiteur) et /admin/ (admin).
+- ⏳ `SUPER_ADMIN_EMAIL` à ajouter dans les propriétés du script ; ancien projet Apps Script à supprimer.
 
 Mise à jour du backend après une modification de `apps-script/` :
 `cd apps-script && clasp push --force && clasp create-version "…" && clasp update-deployment AKfycbxp2S16sgQ1DFJfuXA0PpZRjRveazyH-K9VYlcKjYM6kGQ7uYHU7GtYe5yk4PqhJDVuug -V <n° de version>`
@@ -107,6 +108,34 @@ tant qu'elles ne sont pas mises à jour vers https://polo565.github.io/.
 | logique serveur, sécurité, base | `apps-script/…` | `cd apps-script && clasp push --force`, puis **Déployer → Gérer les déploiements → ✏ → Nouvelle version** (l'URL ne change pas) |
 | contenu (services, FAQ, prix, coordonnées…) | rien : depuis l'**administration** | — |
 
+## Applications Android (Flutter)
+
+Deux petites applications qui affichent le site dans une WebView ; aucune logique ni secret dedans.
+
+| Dossier | Application | Ouvre |
+|---|---|---|
+| `apps/visitor` | HAMDI ITALIE (`it.hamdiitalie.visitor`) | https://polo565.github.io/ |
+| `apps/admin` | HAMDI Admin (`it.hamdiitalie.admin`) | https://polo565.github.io/admin/ |
+| `apps/shared` | code commun : WebView, règles de navigation, textes ar/fr/en | — |
+
+- Adresse du site : `apps/shared/assets/config.json` (`SITE_URL`), puis recompiler les deux APK.
+- Seules les pages de `polo565.github.io` s'ouvrent dans l'application ; les autres liens
+  (Drive, WhatsApp, téléphone, sites officiels) s'ouvrent dans l'application adaptée.
+  L'application visiteur n'ouvre jamais `/admin/`.
+- L'application admin enregistre les fichiers (documents, pièces jointes, CSV) dans
+  `Téléchargements/HAMDI ITALIE` ; menu ⋮ → « Se déconnecter et effacer les données ».
+
+Compiler (Flutter **3.47.9**, celle avec laquelle les applications ont été créées) :
+```bash
+cd apps/shared  && flutter test                 # 17 tests (navigation, configuration, fichiers)
+cd ../visitor   && flutter build apk --release   # build/app/outputs/flutter-apk/app-release.apk
+cd ../admin     && flutter build apk --release
+```
+Signature : sans `android/key.properties`, les APK sont signés avec la clé de *debug* de la
+machine qui compile. Android refuse alors de mettre à jour une application signée par une autre
+clé : désinstaller l'ancienne version d'abord. Pour une distribution durable (ou Google Play),
+créer une clé de publication et la garder hors du dépôt (`key.properties`, `*.jks` sont ignorés).
+
 ## Tester en local (sans rien déployer)
 ```bash
 node tools/test/run-tests.js      # 51 tests du backend (sécurité, demandes, paiements, RGPD, API…)
@@ -125,5 +154,6 @@ tools/test/                    tests du backend + simulateurs Google
 tools/dev-server.js            serveur de test local
 tools/smoke-test.js            test navigateur
 tools/stamp.js                 met à jour les ?v= anti-cache
+apps/                          applications Android (Flutter)
 404.html, robots.txt, .nojekyll
 ```

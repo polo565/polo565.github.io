@@ -1,0 +1,6 @@
+{
+  "_comment": "Single place for the app URLs (spec 2.4). SITE_URL is the GitHub Pages site; VISITOR_WEB_URL and ADMIN_WEB_URL may stay empty: they become SITE_URL and SITE_URL + 'admin/'. The apps never call the Apps Script API themselves: the web pages do. Rebuild both APKs after a change. Never put secrets here: this file is inside the APK.",
+  "SITE_URL": "https://polo565.github.io/",
+  "VISITOR_WEB_URL": "",
+  "ADMIN_WEB_URL": ""
+}
