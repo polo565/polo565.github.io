@@ -158,6 +158,8 @@ function toggleSidebar(force) {
 function logout() {
   var token = session.token;
   SOURCES = {}; REQ_CACHE = []; PAY_CACHE = [];
+  adminCacheClear();          // no admin data stays in memory after signing out
+  prefetchDone = false;
   session = { token: null, admin: null };
   try { sessionStorage.removeItem('hi_admin_token'); } catch (e) {}
   api('api_admin_logout', token).catch(function () {});
@@ -209,8 +211,62 @@ function route() {
 /* ---- Dashboard -------------------------------------------------------------------- */
 function loadDashboard() {
   $('#content').innerHTML = '<div class="grid kpis">' + skeletonCards(8, 70) + '</div>';
-  api('api_admin_getDashboard', session.token).then(renderDashboard).catch(handleApiError);
+  api('api_admin_getDashboard', session.token).then(function (d) {
+    renderDashboard(d);
+    schedulePrefetch();
+  }).catch(handleApiError);
 }
+
+/* ---- Speed: prefetch and in-place refresh (see adminApi in ui.js) ---------------- */
+/** Starts loading a section's first screen in the background (nothing is shown). */
+function prefetchSection(key) {
+  if (!session.admin) return;
+  var cfg = SECTIONS[key];
+  if (!canRead((cfg && cfg.perm) || NAV_ALIAS[key] || key)) return;
+  var quiet = function (p) { if (p && p.catch) p.catch(function () {}); };
+  if (key === 'dashboard') return quiet(api('api_admin_getDashboard', session.token));
+  if (key === 'appointments') { quiet(loadSource('categories')); return quiet(api('api_admin_listRequests', session.token, REQ_FILTER)); }
+  if (key === 'payments') { quiet(loadSource('payment_methods')); return quiet(api('api_admin_listPayments', session.token, PAY_FILTER)); }
+  if (!cfg) return;
+  (cfg.preload || []).concat(listSources(cfg)).forEach(function (e) { quiet(loadSource(e)); });
+  quiet(api('api_admin_list', session.token, cfg.entity, listArgs(cfg, listState(key))));
+}
+
+var prefetchDone = false;
+/** After the first dashboard: load the busiest sections, a little apart. */
+function schedulePrefetch() {
+  if (prefetchDone) return;
+  prefetchDone = true;
+  ['appointments', 'payments', 'services', 'categories'].forEach(function (k, i) {
+    setTimeout(function () { prefetchSection(k); }, 400 + i * 300);
+  });
+}
+
+/** Touching or pointing at a menu entry starts loading it before the tap ends. */
+document.addEventListener('pointerover', onNavIntent, { passive: true });
+document.addEventListener('touchstart', onNavIntent, { passive: true });
+function onNavIntent(e) {
+  var a = e.target && e.target.closest ? e.target.closest('.side-nav a[data-key]') : null;
+  if (!a || a.getAttribute('data-prefetched')) return;
+  a.setAttribute('data-prefetched', '1');
+  setTimeout(function () { a.removeAttribute('data-prefetched'); }, 15000);
+  prefetchSection(a.getAttribute('data-key'));
+}
+
+/**
+ * Newer data arrived for a screen shown from memory: redraw list-type screens in place.
+ * Never under the admin's hands: not on edit/detail pages, with a dialog open or while typing.
+ */
+window.addEventListener('hi:admin-data', function () {
+  if (!session.admin || document.querySelector('.modal-backdrop')) return;
+  var parts = routeHash().replace(/^#\/?/, '').split('/');
+  if (parts[1]) return;
+  var a = document.activeElement;
+  if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
+  var y = window.scrollY;
+  route();
+  setTimeout(function () { window.scrollTo(0, y); }, 0);
+});
 
 function kpi(labelKey, value, iconName, sub) {
   return '<div class="card card-sm kpi"><span class="kpi-label">' + icon(iconName) + esc(t(labelKey)) + '</span>' +
@@ -276,6 +332,10 @@ function handleApiError(err) {
 setLang(detectLang());
 initRouting(route);
 if (session.token) {
+  // Reopening with a session: load the dashboard while the session is being checked
+  // (the server checks the session for that call too; a refused answer is ignored).
+  var bootRoute = (location.hash || '').replace(/^#\/?/, '').split('/')[0];
+  if (!bootRoute || bootRoute === 'dashboard') api('api_admin_getDashboard', session.token).catch(function () {});
   api('api_admin_me', session.token)
     .then(function (admin) { session.admin = admin; enterApp(); })
     .catch(function () { session.token = null; try { sessionStorage.removeItem('hi_admin_token'); } catch (e) {} renderLogin(); });

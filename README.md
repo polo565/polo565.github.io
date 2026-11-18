@@ -130,6 +130,21 @@ node tools/snapshot.js && git add data && git commit -m "Update public content s
 ```
 Une copie ancienne n'est jamais affichée longtemps : la réponse de l'API la remplace.
 
+### Administration
+Les données de l'admin sont privées : pas de copie publique et rien d'enregistré dans le
+navigateur. Pour la vitesse (`adminApi` dans `assets/js/ui.js`, `prefetchSection` dans
+`assets/js/admin/app.js`) :
+- les tableaux de bord, listes et rapports déjà ouverts pendant la session s'affichent depuis la
+  mémoire de la page, puis sont revérifiés en arrière-plan (au-delà de 15 s) et redessinés si
+  besoin — jamais sur un formulaire, une fiche ouverte ou pendant la saisie ;
+- toute écriture (enregistrer, supprimer, statut, paiement, connexion, déconnexion) vide cette
+  mémoire ; la déconnexion aussi ;
+- les formulaires de modification chargent toujours la fiche actuelle ;
+- après le tableau de bord, les demandes, paiements, services et catégories sont préchargés ;
+  pointer ou toucher une entrée du menu la précharge ;
+- une liste charge ses données et ses listes de choix en même temps ; à la réouverture de
+  l'admin, la session et le tableau de bord sont demandés en même temps.
+
 ## Applications Android (Flutter)
 
 Deux petites applications qui affichent le site dans une WebView ; aucune logique ni secret dedans.

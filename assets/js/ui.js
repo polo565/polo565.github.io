@@ -55,7 +55,108 @@ function $$(sel, root) { return Array.prototype.slice.call((root || document).qu
 function api(fn) {
   var args = Array.prototype.slice.call(arguments, 1);
   var path = publicPath(fn, args);
-  return path ? publicRead(path, fn, args) : apiCall(fn, args);
+  if (path) return publicRead(path, fn, args);
+  if (/^api_admin_/.test(fn)) return adminApi(fn, args);
+  return apiCall(fn, args);
+}
+
+/*
+ * Administration: screens already opened in this session show at once from memory, then
+ * are checked in the background. Admin data is private, so it is kept in memory only
+ * (never in the browser's storage) and is gone when the page is closed or reloaded.
+ * Any write (save, delete, status, payment, login, logout…) empties the memory, and a
+ * read that started before a write is not kept. Edit forms always load the current
+ * record (they read with filters, which is a different request from the lists).
+ */
+var ADMIN_READS = {
+  api_admin_list: 1, api_admin_listRequests: 1, api_admin_listPayments: 1, api_admin_listRoles: 1,
+  api_admin_listAdmins: 1, api_admin_getDashboard: 1, api_admin_translationReport: 1,
+  api_admin_paymentReport: 1, api_admin_driveStatus: 1
+};
+/** Reads that are not cached but change nothing (they must not empty the memory). */
+var ADMIN_PLAIN_READS = { api_admin_me: 1, api_admin_getAttachment: 1, api_admin_downloadDocument: 1 };
+var ADMIN_FRESH_MS = 15000;   // younger copies are shown without asking the API again
+var ADMIN_FRESH_ENTITIES = { service_translations: 1 };
+var adminMem = {}, adminInflight = {}, adminMemToken = null, adminGen = 0;
+
+function adminCacheClear() { adminMem = {}; adminInflight = {}; adminFreshInflight = {}; adminGen++; }
+
+function adminApi(fn, args) {
+  if (ADMIN_READS[fn]) return adminRead(fn, args);
+  if (ADMIN_PLAIN_READS[fn]) return apiCall(fn, args);
+  adminCacheClear();
+  var done = function () { adminCacheClear(); };
+  return apiCall(fn, args).then(function (r) { done(); return r; }, function (e) { done(); throw e; });
+}
+
+function adminRead(fn, args) {
+  if (args[0] !== adminMemToken) { adminCacheClear(); adminMemToken = args[0]; }
+  // What an edit form loads (one record, a service's texts) is always read fresh; two
+  // identical requests at the same time share one call (the form starts it early).
+  var opts = args[2];
+  var key = fn + JSON.stringify(args.slice(1));
+  var forEditing = fn === 'api_admin_list' && opts && ((opts.limit === 1 && opts.filters && Object.keys(opts.filters).length) ||
+    ADMIN_FRESH_ENTITIES[args[1]]);
+  if (forEditing) return adminFresh(key, fn, args);
+  var hit = adminMem[key];
+  if (hit) {
+    if (Date.now() - hit.t > ADMIN_FRESH_MS) adminFetch(key, fn, args, true).catch(function () {});
+    return Promise.resolve(JSON.parse(hit.json));
+  }
+  return adminFetch(key, fn, args, false).then(function (json) { return JSON.parse(json); });
+}
+
+/**
+ * Fresh read for edit forms: never kept. Identical requests running at the same time share
+ * one call. A read started early by the form (adminFreshEarly) is handed to the form once —
+ * while running or up to 10 s after it ended — and then forgotten.
+ */
+var adminFreshInflight = {};
+function adminFreshStart(key, fn, args) {
+  var p = apiCall(fn, args).then(function (d) { p.doneAt = Date.now(); return JSON.stringify(d); });
+  p.then(function () {
+    if (!p.early && adminFreshInflight[key] === p) delete adminFreshInflight[key];
+  }, function () { if (adminFreshInflight[key] === p) delete adminFreshInflight[key]; });
+  adminFreshInflight[key] = p;
+  return p;
+}
+
+function adminFresh(key, fn, args) {
+  var p = adminFreshInflight[key];
+  if (p && p.early) {
+    delete adminFreshInflight[key];                       // used once
+    if (p.doneAt && Date.now() - p.doneAt > 10000) p = null;
+  }
+  if (!p) p = adminFreshStart(key, fn, args);
+  return p.then(function (json) { return JSON.parse(json); });
+}
+
+function adminFreshEarly(fn, args) {
+  var key = fn + JSON.stringify(args.slice(1));
+  if (adminFreshInflight[key]) return;
+  var p = adminFreshStart(key, fn, args);
+  p.early = true;
+  p.catch(function () {});
+}
+
+/** One API call per key at a time (a prefetch in progress is reused by the page). */
+function adminFetch(key, fn, args, background) {
+  if (adminInflight[key]) return adminInflight[key];
+  var gen = adminGen;
+  var p = apiCall(fn, args).then(function (d) {
+    var json = JSON.stringify(d);
+    if (adminInflight[key] === p) delete adminInflight[key];
+    if (gen !== adminGen) return json;   // something was written meanwhile: don't keep it
+    var old = adminMem[key];
+    adminMem[key] = { json: json, t: Date.now() };
+    if (background && old && old.json !== json) window.dispatchEvent(new CustomEvent('hi:admin-data', { detail: { fn: fn } }));
+    return json;
+  }, function (err) {
+    if (adminInflight[key] === p) delete adminInflight[key];
+    throw err;
+  });
+  adminInflight[key] = p;
+  return p;
 }
 
 /** The network call itself (see api()). */

@@ -49,7 +49,8 @@ var SECTIONS = {
     ],
     defaults: { currency: 'EUR', requestable: true, published: false, official_links_json: '[]' },
     titleOf: function (r) { return tf(r, 'title') + (r.verified_at ? ' · ' + t('f.verifiedAt') + ' ' + String(r.verified_at).slice(0, 10) : ''); },
-    after: serviceContentEditor
+    after: serviceContentEditor,
+    editPrefetch: function (id) { adminFreshEarly('api_admin_list', [session.token, 'service_translations', serviceTextsArgs(id)]); }
   },
   faqs: {
     entity: 'faqs', sort: 'order',
@@ -202,10 +203,14 @@ var _loadSource = loadSource;
 loadSource = function (entity) { return entity === 'refs' ? loadRefs() : _loadSource(entity); };
 
 /* ---- Service: per-language long content (ServiceTranslations) ------------------- */
+/** The texts of one service (always fresh; started early by the edit form). */
+function serviceTextsArgs(id) { return { filters: { service_id: id }, limit: 10 }; }
+function serviceTextsRequest(id) { return api('api_admin_list', session.token, 'service_translations', serviceTextsArgs(id)); }
+
 function serviceContentEditor(svc, host, editable) {
   host.innerHTML = '<div class="card stack"><h2>' + esc(t('ui.contentPerLang')) + '</h2><p class="small muted">' + esc(t('ui.contentHint')) + '</p>' +
     langTabs() + '<div id="svc-content"><div class="skeleton" style="height:160px"></div></div></div>';
-  api('api_admin_list', session.token, 'service_translations', { filters: { service_id: svc.id }, limit: 10 }).then(function (r) {
+  serviceTextsRequest(svc.id).then(function (r) {
     var byLang = {};
     r.items.forEach(function (x) { byLang[x.lang] = x; });
     $('#svc-content').innerHTML = LANGS.map(function (l) {

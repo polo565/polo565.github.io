@@ -36,14 +36,20 @@ function boolBadge(v) { return v === true || v === 'TRUE' ? '<span class="badge 
 /* ---- List ------------------------------------------------------------------------ */
 var LIST_STATE = {};
 
+/** The list request of a section (same object for the page and the prefetch). */
+function listState(section) { return LIST_STATE[section] || { q: '', offset: 0, filters: {} }; }
+function listArgs(cfg, st) { return { q: st.q, offset: st.offset, limit: 50, filters: st.filters, sort: cfg.sort, dir: cfg.dir }; }
+function listSources(cfg) {
+  return (cfg.cols || []).concat(cfg.filters || []).filter(function (x) { return x.source; }).map(function (x) { return x.source; });
+}
+
 function renderList(section, cfg) {
-  var st = LIST_STATE[section] = LIST_STATE[section] || { q: '', offset: 0, filters: {} };
+  var st = LIST_STATE[section] = listState(section);
   var c = $('#content');
-  var sourcesNeeded = (cfg.cols || []).concat(cfg.filters || []).filter(function (x) { return x.source; }).map(function (x) { return x.source; });
   c.innerHTML = '<div class="card"><div class="skeleton" style="height:240px"></div></div>';
-  Promise.all(sourcesNeeded.map(loadSource)).then(function () {
-    return api('api_admin_list', session.token, cfg.entity, { q: st.q, offset: st.offset, limit: 50, filters: st.filters, sort: cfg.sort, dir: cfg.dir });
-  }).then(function (res) {
+  // The list and its lookup lists are requested together, not one after the other.
+  Promise.all([api('api_admin_list', session.token, cfg.entity, listArgs(cfg, st))].concat(listSources(cfg).map(loadSource))).then(function (all) {
+    var res = all[0];
     var cols = cfg.cols;
     c.innerHTML =
       (cfg.intro ? '<div class="notice small" style="margin-block-end:var(--s4)">' + icon('info') + '<span>' + esc(t(cfg.intro)) + '</span></div>' : '') +
@@ -140,6 +146,8 @@ function renderForm(section, cfg, id) {
   var c = $('#content');
   c.innerHTML = '<div class="card"><div class="skeleton" style="height:320px"></div></div>';
   var sources = cfg.fields.filter(function (f) { return f.source; }).map(function (f) { return f.source; });
+  // Start what the form loads after its first part (e.g. a service's texts) right now.
+  if (id && cfg.editPrefetch) cfg.editPrefetch(id);
   var getRec = id ? api('api_admin_list', session.token, cfg.entity, { filters: (function () { var o = {}; o[cfg.key || 'id'] = id; return o; })(), limit: 1 })
     .then(function (r) { if (!r.items.length) throw new Error('NOT_FOUND: Not found.'); return r.items[0]; }) : Promise.resolve(cfg.defaults ? Object.assign({}, cfg.defaults) : {});
   Promise.all([getRec].concat(sources.map(loadSource))).then(function (res) {
