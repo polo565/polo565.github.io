@@ -26,9 +26,19 @@ Apps Script fait ce travail **sans afficher aucune page** : c'est uniquement l'A
 Ce dépôt est **public** : il ne contient aucun secret, aucun identifiant de Sheet ou de dossier
 Drive. Ces valeurs sont dans les *propriétés du script* (Apps Script), jamais dans le code.
 
+## État (2026-11-18)
+- ✅ Site en ligne sur GitHub Pages, branché sur l'API (déploiement `AKfycbxp2S…`, version 3).
+- ✅ Vérifié en ligne : accueil (ar, RTL), 13 catégories, 132 services, guide, recherche, connexion admin (propriétaire).
+- ⏳ `SUPER_ADMIN_EMAIL` à ajouter dans les propriétés du script ; ancien projet Apps Script à supprimer ;
+  applications Android à pointer vers https://polo565.github.io/.
+
+Mise à jour du backend après une modification de `apps-script/` :
+`cd apps-script && clasp push --force && clasp create-version "…" && clasp update-deployment AKfycbxp2S16sgQ1DFJfuXA0PpZRjRveazyH-K9VYlcKjYM6kGQ7uYHU7GtYe5yk4PqhJDVuug -V <n° de version>`
+(ou dans l'éditeur : Déployer → Gérer les déploiements → ✏ → Nouvelle version).
+
 ---
 
-## Mise en service (propriétaire)
+## Mise en service (propriétaire) — déjà faite, gardée pour référence
 
 ### 1. Propriétés du nouveau projet Apps Script — AVANT toute autre chose
 Ancien projet → ⚙ **Paramètres du projet** → *Propriétés du script* : noter **toutes** les valeurs.
