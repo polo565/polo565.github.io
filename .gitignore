@@ -5,3 +5,11 @@ apps/**/android/key.properties
 *.jks
 *.keystore
 *.apk
+MEMORY.md
+README.md
+
+# Code source garde seulement sur le PC
+apps-script/
+apps/
+tools/
+MEMORY.md
