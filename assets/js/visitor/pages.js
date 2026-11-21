@@ -192,7 +192,7 @@ function renderService(slug) {
     }
     var byLang = {};
     d.content.forEach(function (x) { byLang[x.lang] = x; });
-    var content = byLang[currentLang] || byLang[SUPPORTED_LANGS.filter(function (l) { return byLang[l]; })[0]] || null;
+    var content = byLang[currentLang] || byLang[fallbackLangs().filter(function (l) { return byLang[l]; })[0]] || null;
     var sections = content ? [['svc.about', content.description], ['svc.eligibility', content.eligibility], ['svc.procedure', content.procedure],
       ['svc.documents', content.required_documents], ['svc.notes', content.notes]].filter(function (x) { return x[1]; }) : [];
     var translated = !!content;

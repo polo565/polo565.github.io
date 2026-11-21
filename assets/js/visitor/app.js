@@ -290,7 +290,7 @@ function initRevealOnScroll() {
   scan();
 }
 
-var APP_LANGS = ['ar', 'fr', 'en'];
+var APP_LANGS = ['ar', 'fr', 'en', 'it'];
 setLang(detectLang());
 initShell();
 setLang(currentLang);

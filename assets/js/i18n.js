@@ -103,11 +103,48 @@ var I18N = {
     'common.offline': 'لا يوجد اتصال. تحقّق من الشبكة وحاول مجدداً.', 'common.preview': 'معاينة — بيانات تجريبية',
     'admin.login.title': 'دخول المسؤول', 'admin.login.email': 'البريد الإلكتروني', 'admin.login.password': 'كلمة المرور',
     'admin.login.submit': 'تسجيل الدخول', 'admin.login.note': 'دخول مقيّد. يتم تسجيل جميع العمليات.'
+  },
+  it: {
+    'nav.home': 'Home', 'nav.services': 'Servizi', 'nav.guide': 'Nuovi arrivati', 'nav.about': 'Chi siamo',
+    'nav.contact': 'Contatti', 'nav.account': 'Il mio account', 'nav.menu': 'Menu', 'nav.language': 'Lingua', 'nav.theme': 'Tema chiaro o scuro',
+    'hero.title': 'La tua guida completa alla vita e alle procedure in Italia',
+    'hero.subtitle': 'Trova le informazioni, i documenti e l’assistenza di cui hai bisogno per semplificare la tua vita in Italia.',
+    'hero.search': 'Cerca un servizio, es. permesso di soggiorno, ISEE…',
+    'hero.cta': 'Richiedi il servizio', 'hero.explore': 'Esplora i servizi', 'hero.guide': 'Guida per nuovi arrivati',
+    'cats.title': 'Categorie di servizi', 'cats.subtitle': 'Tredici ambiti per accompagnarti nelle procedure italiane.',
+    'cats.view': 'Vedi i servizi',
+    'popular.title': 'Servizi più richiesti',
+    'guide.title': 'Appena arrivato in Italia?',
+    'guide.text': 'Rispondi ad alcune domande e ricevi un elenco personalizzato dei prossimi passi: documenti, uffici competenti e link ufficiali.',
+    'guide.cta': 'Inizia la guida',
+    'how.title': 'Come funziona',
+    'how.1.t': 'Scegli il servizio', 'how.1.d': 'Trova la procedura adatta a te tra 13 categorie.',
+    'how.2.t': 'Scopri i documenti', 'how.2.d': 'Consulta l’elenco dei documenti richiesti e i link ufficiali.',
+    'how.3.t': 'Richiedi assistenza', 'how.3.d': 'Invia una richiesta e ricevi subito un numero di riferimento.',
+    'how.4.t': 'Segui la tua richiesta', 'how.4.d': 'Controlla lo stato con il riferimento e il codice personale.',
+    'docs.title': 'Documenti utili', 'docs.download': 'Scarica',
+    'faq.title': 'Domande frequenti',
+    'contact.title': 'Contatti e assistenza', 'contact.name': 'Nome', 'contact.phone': 'Telefono',
+    'contact.email': 'Email (facoltativa)', 'contact.message': 'Messaggio', 'contact.send': 'Invia', 'contact.sent': 'Messaggio inviato. Ti risponderemo il prima possibile.',
+    'contact.consent': 'Acconsento al trattamento dei miei dati secondo l’informativa sulla privacy.',
+    'cash.title': 'Pagamento in contanti disponibile',
+    'cash.text': 'Nessun conto bancario o carta di credito necessari: puoi pagare in contanti presso il nostro ufficio.',
+    'footer.about': 'Chi siamo', 'footer.privacy': 'Informativa sulla privacy', 'footer.terms': 'Termini e condizioni',
+    'footer.disclaimer': 'HAMDI ITALIE è un servizio indipendente di informazione e assistenza. Non è un sito ufficiale del governo italiano e non rappresenta la Questura, la Prefettura, il Comune, il CAF o il Patronato. Le procedure e i costi ufficiali sono stabiliti dalle autorità competenti. I servizi legali sono forniti solo da professionisti qualificati.',
+    'footer.rights': 'Tutti i diritti riservati.',
+    'common.loading': 'Caricamento…', 'common.retry': 'Riprova', 'common.cancel': 'Annulla', 'common.confirm': 'Conferma',
+    'common.save': 'Salva', 'common.close': 'Chiudi', 'common.error': 'Si è verificato un errore. Riprova.',
+    'common.offline': 'Nessuna connessione. Controlla la rete e riprova.', 'common.preview': 'Anteprima — dati di esempio',
+    'admin.login.title': 'Accesso amministratore', 'admin.login.email': 'Email', 'admin.login.password': 'Password',
+    'admin.login.submit': 'Accedi', 'admin.login.note': 'Accesso riservato. Tutte le operazioni vengono registrate.'
   }
 };
 
-var LANG_NAMES = { ar: 'العربية', fr: 'Français', en: 'English' };
-var SUPPORTED_LANGS = ['ar', 'fr', 'en'];
+var LANG_NAMES = { ar: 'العربية', fr: 'Français', en: 'English', it: 'Italiano' };
+var SUPPORTED_LANGS = ['ar', 'fr', 'en', 'it'];
+/* Fallback order when a record has no text in the current language. Italian prefers
+   English, then French, then Arabic (more useful for an Italian reader). */
+var LANG_FALLBACK = { it: ['en', 'fr', 'ar'] };
 var DEFAULT_LANG = 'ar';
 var currentLang = DEFAULT_LANG;
 
@@ -116,10 +153,13 @@ function t(key) {
 }
 
 /** A record's text in the current language, else the first available among ar/fr/en. */
+function fallbackLangs() { return LANG_FALLBACK[currentLang] || SUPPORTED_LANGS; }
+
 function tf(record, field) {
   if (!record) return '';
   if (record[field + '_' + currentLang]) return record[field + '_' + currentLang];
-  for (var i = 0; i < SUPPORTED_LANGS.length; i++) if (record[field + '_' + SUPPORTED_LANGS[i]]) return record[field + '_' + SUPPORTED_LANGS[i]];
+  var order = fallbackLangs();
+  for (var i = 0; i < order.length; i++) if (record[field + '_' + order[i]]) return record[field + '_' + order[i]];
   return '';
 }
 
