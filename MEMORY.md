@@ -88,7 +88,13 @@ Google Apps Script …/exec           (dossier apps-script/ : API JSON uniquemen
    `_it` générées par `setup`) ; interface italienne complète (`i18n.js` + `visitor/strings.js`) ;
    « Italiano » dans le sélecteur. En attendant les traductions, le contenu bascule en **anglais**
    pour un visiteur italien (pas en arabe). **Reste à faire par le propriétaire** : lancer `setup`
-   une fois (colonnes `_it`), puis saisir les textes italiens dans l'admin (voir § 7).
+   une fois (par sécurité), puis compléter les textes longs dans l'admin (voir § 7).
+   **Bonne surprise** : les colonnes `_it` existaient déjà (contenu multilingue d'origine), donc
+   **les 132 titres de services, les catégories et les bureaux compétents sont déjà en italien**
+   sans rien faire. Il ne manque que les textes longs (descriptions) et les FAQ.
+   **Scintillement corrigé (2026-11-21)** : la copie `data/*.json` avait été générée avant
+   l'italien → un visiteur IT voyait l'anglais ~1 s (copie) avant que l'API renvoie l'italien.
+   Corrigé en régénérant la copie (`node tools/snapshot.js`).
 11. **Tout le code remis sur GitHub** (2026-11-21) : le propriétaire a re-poussé `apps-script/`,
    `apps/`, `tools/`, `MEMORY.md`. Le dépôt est de nouveau complet. `.gitignore` restauré
    (ignore `build/`, clés `*.jks`, `key.properties`).
@@ -118,6 +124,9 @@ réouverture 3,4 s (avant 6 s) ; première connexion toujours ~6 s (deux appels 
 - **La source `apps-script/` du dépôt doit rester = au déploiement en ligne.** Le backend en
   ligne est en **version 8** (avec l'italien). Avant tout `clasp push`, vérifier que
   `apps-script/config/Config.gs` a bien `LANGS: ['ar','fr','en','it']`, sinon on régresse.
+- **Après tout changement de contenu/langue dans le backend, régénérer la copie publique** :
+  `node tools/snapshot.js && git add data && git commit && git push`. Sinon `data/*.json` est
+  périmé et le premier affichage montre l'ancien contenu ~1 s avant que l'API corrige (scintillement).
 - **Dépôt public** : jamais de secret, d'identifiant de Sheet/Drive, de mot de passe, d'e-mail
   personnel, ni de clé API dans le code, les commits ou ce fichier. Les secrets vont dans
   Apps Script → Paramètres du projet → Propriétés du script.
@@ -179,13 +188,12 @@ cd ..\admin   ; flutter build apk --release
 ## 7. Décisions en attente et prochaines étapes
 
 **À faire par le propriétaire**
-- [ ] **Italien — colonnes `_it`** : lancer `setup` UNE fois depuis l'éditeur Apps Script
-      (après avoir vérifié `SUPER_ADMIN_EMAIL`). Cela ajoute les colonnes `title_it`, etc. au
-      Sheet (additif, rien n'est effacé). Sans ça, l'admin affiche l'onglet IT mais ne
-      l'enregistre pas. `clasp run setup` ne marche pas sur ce projet (API exécutable non
-      configurée) → c'est au propriétaire de le lancer depuis l'éditeur.
-- [ ] **Italien — contenu** : saisir les textes italiens des services / FAQ / accueil dans
-      l'admin (petit à petit). En attendant, les visiteurs IT voient le contenu en anglais.
+- [ ] **Italien — `setup` (facultatif, par sécurité)** : les colonnes `_it` existent déjà pour
+      les services et catégories (l'italien y est déjà affiché). Lancer `setup` une fois depuis
+      l'éditeur garantit que TOUS les onglets (FAQ, accueil…) ont aussi leurs colonnes `_it`.
+      Harmless (additif). `clasp run setup` ne marche pas ici → à faire depuis l'éditeur.
+- [ ] **Italien — textes longs** : compléter dans l'admin (onglet IT) les descriptions des
+      services et les FAQ. Les titres/bureaux sont déjà en italien.
 - [ ] Ajouter la propriété du script `SUPER_ADMIN_EMAIL` (son adresse Google) dans le projet
       Apps Script `15qMipz3…` (sinon `setup` refuse de se lancer depuis l'éditeur).
 - [ ] Tester les APK 2.0.0 sur le téléphone (accueil, service, retour, demande avec pièce jointe ;
