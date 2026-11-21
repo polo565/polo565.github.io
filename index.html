@@ -8,12 +8,14 @@
   <meta property="og:title" content="HAMDI ITALIE">
   <meta property="og:type" content="website">
   <meta name="theme-color" content="#E9EDF3">
+  <script>/* Night mode before first paint: no flash. Follows the device unless the visitor chose. */
+    try { var _t = localStorage.getItem('hi_theme'); if (_t === 'dark' || _t === 'light') document.documentElement.setAttribute('data-theme', _t); } catch (e) {}</script>
   <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/design-system.css?v=52aa1e20d0">
-  <link rel="stylesheet" href="/assets/css/visitor/main.css?v=f457ebf46a">
+  <link rel="stylesheet" href="/assets/css/visitor/main.css?v=9b73e14b26">
 </head>
 <body>
   <a class="sr-only" href="#main">Skip to content</a>
@@ -38,6 +40,7 @@
           <span class="lang-icon" id="lang-icon"></span>
           <select id="lang" class="select"></select>
         </label>
+        <button class="btn btn-icon btn-ghost theme-toggle" id="theme-toggle" type="button" data-i18n-aria="nav.theme"></button>
         <a class="btn btn-icon btn-ghost account-link" href="#/account" data-i18n-aria="nav.account" id="account-link"></a>
         <button class="btn btn-icon menu-btn" id="menu-btn" aria-expanded="false" aria-controls="main-nav" data-i18n-aria="nav.menu"></button>
       </div>
@@ -69,8 +72,8 @@
   </footer>
 
   <script src="/assets/js/config.js?v=d74c040242"></script>
-  <script src="/assets/js/icons.js?v=66defb9d43"></script>
-  <script src="/assets/js/i18n.js?v=58d613767b"></script>
+  <script src="/assets/js/icons.js?v=c11aede03b"></script>
+  <script src="/assets/js/i18n.js?v=0a5c7377d9"></script>
   <script src="/assets/js/ui.js?v=34432748f9"></script>
   <link rel="stylesheet" href="/assets/css/picker.css?v=4ed680a324">
   <script src="/assets/js/picker.js?v=9fac486c92"></script>
@@ -79,6 +82,6 @@
   <script src="/assets/js/visitor/request.js?v=f6e56b5024"></script>
   <script src="/assets/js/visitor/account.js?v=22af00b0a4"></script>
   <script src="/assets/js/visitor/guide.js?v=ffe5d97183"></script>
-  <script src="/assets/js/visitor/app.js?v=58d24ecdbd"></script>
+  <script src="/assets/js/visitor/app.js?v=33412895b6"></script>
 </body>
 </html>

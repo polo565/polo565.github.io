@@ -45,7 +45,7 @@ function renderHome(d) {
   html += '<section class="section" id="services"><div class="container">' +
     '<div class="section-head"><div><h2>' + esc(t('cats.title')) + '</h2><p class="muted">' + esc(t('cats.subtitle')) + '</p></div></div>' +
     '<div class="grid cat-grid">' + (d.categories || []).map(function (c) {
-      return '<a class="card interactive cat-card" href="#/category/' + encodeURIComponent(c.slug) + '">' +
+      return '<a class="card interactive cat-card" data-cat="' + esc(c.code) + '" href="#/category/' + encodeURIComponent(c.slug) + '">' +
         (c.image_url ? '<div class="media cat-media"><img src="' + esc(safeUrl(c.image_url)) + '" alt="' + esc(tf(c, 'title')) + '" loading="lazy"></div>' : '') +
         '<div class="cat-top"><span class="icon-badge">' + icon(c.icon) + '</span><span class="cat-code">' + esc(c.code) + '</span></div>' +
         '<h3>' + esc(tf(c, 'title')) + '</h3><p>' + esc(tf(c, 'description')) + '</p>' +
@@ -205,6 +205,26 @@ function initShell() {
     var open = $('#main-nav').classList.toggle('open');
     this.setAttribute('aria-expanded', String(open));
   };
+  // Light / dark (night) mode toggle. Follows the device by default; a manual
+  // choice is remembered on this device (applied before first paint in index.html).
+  var themeBtn = $('#theme-toggle');
+  if (themeBtn) {
+    var prefersDark = function () { return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches); };
+    var isDark = function () {
+      var set = document.documentElement.getAttribute('data-theme');
+      return set ? set === 'dark' : prefersDark();
+    };
+    var paintThemeIcon = function () { themeBtn.innerHTML = icon(isDark() ? 'sun' : 'moon'); };
+    paintThemeIcon();
+    themeBtn.onclick = function () {
+      var next = isDark() ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('hi_theme', next); } catch (e) {}
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute('content', next === 'dark' ? '#363d4d' : '#E9EDF3');
+      paintThemeIcon();
+    };
+  }
   $('#year').textContent = new Date().getFullYear();
   // Restore an optional visitor session (used to prefill forms).
   var tok = visitorToken();

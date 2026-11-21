@@ -4,7 +4,7 @@
 var I18N = {
   en: {
     'nav.home': 'Home', 'nav.services': 'Services', 'nav.guide': 'New immigrants', 'nav.about': 'About us',
-    'nav.contact': 'Contact', 'nav.account': 'My account', 'nav.menu': 'Menu', 'nav.language': 'Language',
+    'nav.contact': 'Contact', 'nav.account': 'My account', 'nav.menu': 'Menu', 'nav.language': 'Language', 'nav.theme': 'Light or dark mode',
     'hero.title': 'Your Complete Guide to Life in Italy',
     'hero.subtitle': 'Find the information, documents, and assistance you need to simplify your life in Italy.',
     'hero.search': 'Search a service, e.g. residence permit, ISEE…',
@@ -38,7 +38,7 @@ var I18N = {
   },
   fr: {
     'nav.home': 'Accueil', 'nav.services': 'Services', 'nav.guide': 'Nouveaux arrivants', 'nav.about': 'À propos',
-    'nav.contact': 'Contact', 'nav.account': 'Mon compte', 'nav.menu': 'Menu', 'nav.language': 'Langue',
+    'nav.contact': 'Contact', 'nav.account': 'Mon compte', 'nav.menu': 'Menu', 'nav.language': 'Langue', 'nav.theme': 'Mode clair ou sombre',
     'hero.title': 'Votre guide complet pour vivre et effectuer vos démarches en Italie',
     'hero.subtitle': 'Trouvez les informations, les documents et l’assistance dont vous avez besoin pour simplifier votre vie en Italie.',
     'hero.search': 'Rechercher un service, ex. titre de séjour, ISEE…',
@@ -72,7 +72,7 @@ var I18N = {
   },
   ar: {
     'nav.home': 'الرئيسية', 'nav.services': 'الخدمات', 'nav.guide': 'المهاجرون الجدد', 'nav.about': 'من نحن',
-    'nav.contact': 'اتصل بنا', 'nav.account': 'حسابي', 'nav.menu': 'القائمة', 'nav.language': 'اللغة',
+    'nav.contact': 'اتصل بنا', 'nav.account': 'حسابي', 'nav.menu': 'القائمة', 'nav.language': 'اللغة', 'nav.theme': 'الوضع الفاتح أو الداكن',
     'hero.title': 'دليلك الشامل للحياة والإجراءات الإدارية في إيطاليا',
     'hero.subtitle': 'اعثر على المعلومات والوثائق والمساعدة التي تحتاجها لتبسيط حياتك في إيطاليا.',
     'hero.search': 'ابحث عن خدمة، مثل تصريح الإقامة، ISEE…',

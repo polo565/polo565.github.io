@@ -180,3 +180,88 @@ html:not([dir="rtl"]) .icon.back-arrow { transform: scaleX(-1); }
 input[type=file].input { padding: var(--s3); }
 .receipt h2 { display: flex; gap: var(--s2); align-items: center; }
 .preview-flag { position: fixed; inset-block-start: 76px; inset-inline-end: 12px; z-index: 60; }
+
+/* ==========================================================================
+   Couleurs des catégories, bannières, et mode nuit (ajout — thème visiteur)
+   ========================================================================== */
+
+/* ---- Petites couleurs par catégorie (badge + numéro) --------------------- */
+.cat-card[data-cat="01"] { --cat: #3B6FE0; }
+.cat-card[data-cat="02"] { --cat: #0E9E8E; }
+.cat-card[data-cat="03"] { --cat: #3DA35D; }
+.cat-card[data-cat="04"] { --cat: #7A5AF8; }
+.cat-card[data-cat="05"] { --cat: #C98A1E; }
+.cat-card[data-cat="06"] { --cat: #E05268; }
+.cat-card[data-cat="07"] { --cat: #2D7FF9; }
+.cat-card[data-cat="08"] { --cat: #EC5BA6; }
+.cat-card[data-cat="09"] { --cat: #0EA5B5; }
+.cat-card[data-cat="10"] { --cat: #E8833A; }
+.cat-card[data-cat="11"] { --cat: #9B51E0; }
+.cat-card[data-cat="12"] { --cat: #4F7BC0; }
+.cat-card[data-cat="13"] { --cat: #10B48A; }
+.cat-card .icon-badge {
+  color: var(--cat, var(--primary));
+  background: color-mix(in srgb, var(--cat, var(--primary)) 15%, var(--surface));
+}
+.cat-card .cat-code { color: var(--cat, var(--muted)); opacity: .85; }
+.cat-card .link { color: var(--cat, var(--primary)); }
+.cat-card:hover .icon-badge {
+  box-shadow: var(--raise-sm), 0 0 0 2px color-mix(in srgb, var(--cat, var(--primary)) 35%, transparent);
+}
+
+/* ---- Bannière « Nouveaux arrivants » colorée ----------------------------- */
+.guide-band {
+  background: linear-gradient(120deg, #12A585 0%, #2D7FF9 100%);
+  color: #fff; box-shadow: 0 16px 34px -12px rgba(45, 127, 249, .55);
+}
+.guide-band h2 { color: #fff; }
+.guide-band .muted { color: rgba(255, 255, 255, .88) !important; }
+.guide-band .icon-badge { background: rgba(255, 255, 255, .18); color: #fff; box-shadow: none; }
+.guide-band .btn-primary { --btn-bg: #fff; --btn-ink: #12406f; }
+.guide-band .btn-primary:hover { filter: brightness(.97); }
+
+/* ---- Numéros d'étapes colorés ------------------------------------------- */
+.steps .step:nth-child(1)::before { background: #2D7FF9; }
+.steps .step:nth-child(2)::before { background: #12A585; }
+.steps .step:nth-child(3)::before { background: #9B51E0; }
+.steps .step:nth-child(4)::before { background: #E8833A; }
+
+/* ---- Petite touche sur les services populaires --------------------------- */
+.popular .chip .icon { color: var(--accent); }
+
+/* ==========================================================================
+   MODE NUIT — fond repris de la maquette (bleu-ardoise foncé)
+   S'applique seulement au site visiteur (ce fichier n'est pas chargé par l'admin).
+   Automatique selon le téléphone, sauf si le visiteur a choisi (data-theme).
+   ========================================================================== */
+:root[data-theme="dark"] {
+  --bg: #363d4d; --surface: #363d4d;
+  --text: #e7ecf3; --muted: #a2b1c4;
+  --primary: #5d9ad0; --primary-ink: #0f263a; --secondary: #86aec1; --accent: #d8ab54;
+  --success: #4bbd96; --warning: #e0a54a; --error: #e88080;
+  --shadow-dark: rgba(0, 0, 0, .46); --shadow-light: rgba(255, 255, 255, .05);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #363d4d; --surface: #363d4d;
+    --text: #e7ecf3; --muted: #a2b1c4;
+    --primary: #5d9ad0; --primary-ink: #0f263a; --secondary: #86aec1; --accent: #d8ab54;
+    --success: #4bbd96; --warning: #e0a54a; --error: #e88080;
+    --shadow-dark: rgba(0, 0, 0, .46); --shadow-light: rgba(255, 255, 255, .05);
+  }
+}
+
+/* Réglages qui ne passent pas par les variables, repris en mode nuit. */
+:root[data-theme="dark"] .site-header,
+:root:not([data-theme="light"]) .site-header {
+  background: rgba(54, 61, 77, .9); box-shadow: 0 6px 18px rgba(0, 0, 0, .4);
+}
+:root[data-theme="dark"] .toast,
+:root:not([data-theme="light"]) .toast { background: #1b2230; }
+:root[data-theme="dark"] .skeleton,
+:root:not([data-theme="light"]) .skeleton { background: linear-gradient(90deg, #2f3542 25%, #3a4152 50%, #2f3542 75%); background-size: 200% 100%; }
+:root[data-theme="dark"] .media,
+:root:not([data-theme="light"]) .media { background: linear-gradient(135deg, #2f3646, #262c38); }
+:root[data-theme="dark"] .table tbody tr:hover td,
+:root:not([data-theme="light"]) .table tbody tr:hover td { background: rgba(255, 255, 255, .05); }
+/* Mode nuit forcé : la barre d'adresse suit aussi (voir le script dans index.html). */
