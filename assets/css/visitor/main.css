@@ -186,19 +186,19 @@ input[type=file].input { padding: var(--s3); }
    ========================================================================== */
 
 /* ---- Petites couleurs par catégorie (badge + numéro) --------------------- */
-.cat-card[data-cat="01"] { --cat: #3B6FE0; }
-.cat-card[data-cat="02"] { --cat: #0E9E8E; }
-.cat-card[data-cat="03"] { --cat: #3DA35D; }
-.cat-card[data-cat="04"] { --cat: #7A5AF8; }
-.cat-card[data-cat="05"] { --cat: #C98A1E; }
-.cat-card[data-cat="06"] { --cat: #E05268; }
-.cat-card[data-cat="07"] { --cat: #2D7FF9; }
-.cat-card[data-cat="08"] { --cat: #EC5BA6; }
-.cat-card[data-cat="09"] { --cat: #0EA5B5; }
-.cat-card[data-cat="10"] { --cat: #E8833A; }
-.cat-card[data-cat="11"] { --cat: #9B51E0; }
-.cat-card[data-cat="12"] { --cat: #4F7BC0; }
-.cat-card[data-cat="13"] { --cat: #10B48A; }
+[data-cat="01"] { --cat: #3B6FE0; }
+[data-cat="02"] { --cat: #0E9E8E; }
+[data-cat="03"] { --cat: #3DA35D; }
+[data-cat="04"] { --cat: #7A5AF8; }
+[data-cat="05"] { --cat: #C98A1E; }
+[data-cat="06"] { --cat: #E05268; }
+[data-cat="07"] { --cat: #2D7FF9; }
+[data-cat="08"] { --cat: #EC5BA6; }
+[data-cat="09"] { --cat: #0EA5B5; }
+[data-cat="10"] { --cat: #E8833A; }
+[data-cat="11"] { --cat: #9B51E0; }
+[data-cat="12"] { --cat: #4F7BC0; }
+[data-cat="13"] { --cat: #10B48A; }
 .cat-card .icon-badge {
   color: var(--cat, var(--primary));
   background: color-mix(in srgb, var(--cat, var(--primary)) 15%, var(--surface));
@@ -289,4 +289,49 @@ input[type=file].input { padding: var(--s3); }
 .theme-switch.is-dark .ts-knob {
   inset-inline-start: 33px;
   background: linear-gradient(145deg, #6E9CF3, #3B6FE0);
+}
+
+/* ==========================================================================
+   Bandes verticales colorées + bannières service colorées + animation scroll
+   ========================================================================== */
+
+/* ---- Bande verticale à gauche : cartes catégories (couleur de la catégorie) */
+.cat-card { position: relative; overflow: hidden; }
+.cat-card::before {
+  content: ''; position: absolute; inset-block: 0; inset-inline-start: 0; width: 6px;
+  background: var(--cat, var(--primary)); z-index: 3;
+}
+
+/* ---- Bande verticale à gauche : services d'une liste (une couleur par item) */
+.svc-item { position: relative; overflow: hidden; padding-inline-start: calc(var(--s4) + 6px); }
+.svc-item::before {
+  content: ''; position: absolute; inset-block: 0; inset-inline-start: 0; width: 6px;
+  background: var(--cat, var(--secondary));
+}
+.svc-list .svc-item:nth-child(8n+1) { --cat: #2D7FF9; }
+.svc-list .svc-item:nth-child(8n+2) { --cat: #12A585; }
+.svc-list .svc-item:nth-child(8n+3) { --cat: #9B51E0; }
+.svc-list .svc-item:nth-child(8n+4) { --cat: #E8833A; }
+.svc-list .svc-item:nth-child(8n+5) { --cat: #E05268; }
+.svc-list .svc-item:nth-child(8n+6) { --cat: #0EA5B5; }
+.svc-list .svc-item:nth-child(8n+7) { --cat: #C98A1E; }
+.svc-list .svc-item:nth-child(8n+8) { --cat: #4F7BC0; }
+.svc-item .icon { color: var(--cat, var(--secondary)); }
+
+/* ---- Bannière service / catégorie colorée (bande + badge teinté) ---------- */
+.page-head { position: relative; padding-inline-start: var(--s5); }
+.page-head::before {
+  content: ''; position: absolute; inset-block: 2px; inset-inline-start: 0; width: 6px;
+  border-radius: var(--r-pill); background: var(--cat, var(--primary));
+}
+.page-head .icon-badge {
+  color: var(--cat, var(--primary));
+  background: color-mix(in srgb, var(--cat, var(--primary)) 15%, var(--surface));
+}
+.page-head .head-cta .btn-primary { --btn-bg: var(--cat, var(--primary)); }
+
+/* ---- Petite animation à l'apparition au défilement ----------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal { opacity: 0; transform: translateY(16px); transition: opacity .55s var(--ease), transform .55s var(--ease); }
+  .reveal.in { opacity: 1; transform: none; }
 }

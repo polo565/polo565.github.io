@@ -265,8 +265,34 @@ window.addEventListener('hi:public-data', function (e) {
   window.scrollTo(0, y);
 });
 
+/*
+ * A little motion: cards and banners fade/slide in as they scroll into view.
+ * Re-scanned after every page render (#main changes). Skipped entirely when the
+ * device asks for reduced motion, so nothing is ever left hidden.
+ */
+function initRevealOnScroll() {
+  if (!('IntersectionObserver' in window)) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var main = document.getElementById('main');
+  if (!main) return;
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+    });
+  }, { rootMargin: '0px 0px -6% 0px', threshold: 0.05 });
+  function scan() {
+    var nodes = main.querySelectorAll('.card, .section-head, .page-head, .notice, .popular .chip, .guide-band');
+    for (var i = 0; i < nodes.length; i++) {
+      if (!nodes[i].classList.contains('reveal')) { nodes[i].classList.add('reveal'); io.observe(nodes[i]); }
+    }
+  }
+  new MutationObserver(scan).observe(main, { childList: true, subtree: true });
+  scan();
+}
+
 var APP_LANGS = ['ar', 'fr', 'en'];
 setLang(detectLang());
 initShell();
 setLang(currentLang);
 initRouting(route);
+initRevealOnScroll();

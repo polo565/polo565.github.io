@@ -133,7 +133,7 @@ function renderCategory(slug) {
     var c = d.category;
     setMain(pageSection(crumbs([{ label: t('nav.services'), href: '#/services' }, { label: tf(c, 'title') }]) +
       (c.image_url ? '<div class="media cat-hero"><img src="' + esc(safeUrl(c.image_url)) + '" alt="' + esc(tf(c, 'title')) + '"></div>' : '') +
-      '<div class="page-head"><span class="icon-badge lg">' + icon(c.icon) + '</span><div><h1>' + esc(tf(c, 'title')) + '</h1>' +
+      '<div class="page-head" data-cat="' + esc(c.code) + '"><span class="icon-badge lg">' + icon(c.icon) + '</span><div><h1>' + esc(tf(c, 'title')) + '</h1>' +
       '<p class="muted">' + esc(tf(c, 'description')) + '</p></div></div>' +
       (c.slug === 'nuovi-immigrati' ? '<a class="card guide-cta" href="#/guide">' + icon('route') + '<strong>' + esc(t('guide.cta')) + '</strong>' + icon('arrow', 'flip-rtl') + '</a>' : '') +
       '<div><h2>' + esc(t('cat.services')) + '</h2>' + serviceList(d.services) + '</div>' +
@@ -199,7 +199,7 @@ function renderService(slug) {
     var otherLangOnly = content && content.lang !== currentLang;
     setMain(pageSection(
       crumbs([{ label: t('nav.services'), href: '#/services' }].concat(c ? [{ label: tf(c, 'title'), href: '#/category/' + encodeURIComponent(c.slug) }] : []).concat([{ label: tf(s, 'title') }])) +
-      '<div class="page-head"><span class="icon-badge lg">' + icon(c ? c.icon : 'file') + '</span><div><h1>' + esc(tf(s, 'title')) + '</h1>' +
+      '<div class="page-head"' + (c ? ' data-cat="' + esc(c.code) + '"' : '') + '><span class="icon-badge lg">' + icon(c ? c.icon : 'file') + '</span><div><h1>' + esc(tf(s, 'title')) + '</h1>' +
       (tf(s, 'summary') ? '<p class="muted">' + esc(tf(s, 'summary')) + '</p>' : '') +
       (requestable(s) ? '<div class="head-cta">' + requestButton(s) + '</div>' : '') + '</div></div>' +
       '<div class="svc-layout"><div class="stack-lg">' +
