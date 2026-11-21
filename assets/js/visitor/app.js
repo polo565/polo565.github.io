@@ -214,15 +214,28 @@ function initShell() {
       var set = document.documentElement.getAttribute('data-theme');
       return set ? set === 'dark' : prefersDark();
     };
-    var paintThemeIcon = function () { themeBtn.innerHTML = icon(isDark() ? 'sun' : 'moon'); };
-    paintThemeIcon();
+    // Sliding sun/moon switch: a pill track with both icons and a coloured knob.
+    themeBtn.innerHTML =
+      '<span class="ts-track">' +
+        '<span class="ts-ic ts-sun">' + icon('sun') + '</span>' +
+        '<span class="ts-ic ts-moon">' + icon('moon') + '</span>' +
+        '<span class="ts-knob"></span>' +
+      '</span>';
+    var knob = themeBtn.querySelector('.ts-knob');
+    var paintTheme = function () {
+      var dark = isDark();
+      themeBtn.classList.toggle('is-dark', dark);
+      themeBtn.setAttribute('aria-checked', String(dark));
+      knob.innerHTML = icon(dark ? 'moon' : 'sun');
+    };
+    paintTheme();
     themeBtn.onclick = function () {
       var next = isDark() ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       try { localStorage.setItem('hi_theme', next); } catch (e) {}
       var meta = document.querySelector('meta[name="theme-color"]');
       if (meta) meta.setAttribute('content', next === 'dark' ? '#363d4d' : '#E9EDF3');
-      paintThemeIcon();
+      paintTheme();
     };
   }
   $('#year').textContent = new Date().getFullYear();

@@ -265,3 +265,28 @@ input[type=file].input { padding: var(--s3); }
 :root[data-theme="dark"] .table tbody tr:hover td,
 :root:not([data-theme="light"]) .table tbody tr:hover td { background: rgba(255, 255, 255, .05); }
 /* Mode nuit forcé : la barre d'adresse suit aussi (voir le script dans index.html). */
+
+/* ---- Interrupteur clair / nuit (soleil ↔ lune, style maquette) ----------- */
+.theme-switch { background: none; border: 0; padding: 4px; margin: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; line-height: 0; }
+.theme-switch:focus-visible { outline: 3px solid var(--secondary); outline-offset: 2px; border-radius: var(--r-pill); }
+.ts-track {
+  position: relative; display: inline-block; width: 64px; height: 34px; border-radius: var(--r-pill);
+  background: var(--surface);
+  box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light);
+}
+.ts-ic { position: absolute; inset-block-start: 50%; transform: translateY(-50%); color: var(--muted); opacity: .5; line-height: 0; }
+.ts-ic .icon { width: 17px; height: 17px; }
+.ts-sun { inset-inline-start: 9px; }
+.ts-moon { inset-inline-end: 9px; }
+.ts-knob {
+  position: absolute; inset-block-start: 3px; inset-inline-start: 3px;
+  width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: #fff;
+  background: linear-gradient(145deg, #FFB64D, #F28C00);
+  box-shadow: 3px 3px 7px rgba(0,0,0,.3), -1px -1px 3px rgba(255,255,255,.45);
+  transition: inset-inline-start .28s var(--ease), background .28s var(--ease);
+}
+.ts-knob .icon { width: 17px; height: 17px; stroke-width: 2.1; }
+.theme-switch.is-dark .ts-knob {
+  inset-inline-start: 33px;
+  background: linear-gradient(145deg, #6E9CF3, #3B6FE0);
+}
