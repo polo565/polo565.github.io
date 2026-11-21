@@ -4,14 +4,14 @@
 > avant de travailler, puis `README.md` pour le détail technique.
 > Dépôt **public** : ce fichier ne contient aucun secret ni identifiant privé (Sheet, Drive,
 > mots de passe). Ne jamais en ajouter ici.
-> Dernière mise à jour : 2026-11-19.
+> Dernière mise à jour : 2026-11-21.
 
 ---
 
 ## 1. Le propriétaire et sa façon de travailler
 
 - **Langue : répondre en français**, simplement et clairement. Le site lui-même est en arabe
-  (par défaut, de droite à gauche), français et anglais. L'italien a été retiré.
+  (par défaut, de droite à gauche), français, anglais et **italien** (ré-ajouté le 2026-11-21).
 - Le propriétaire travaille souvent **depuis son téléphone** : préférer des instructions courtes,
   des liens cliquables, et faire soi-même ce qui peut l'être.
 - **Pas de commits automatiques** (refusé explicitement) : pas de GitHub Action qui commite ou
@@ -47,10 +47,12 @@ Google Apps Script …/exec           (dossier apps-script/ : API JSON uniquemen
 - **Administration** : https://polo565.github.io/admin/ (connexion vérifiée par le serveur)
 - **Backend** : projet Apps Script `15qMipz3…` (voir `apps-script/.clasp.json`),
   déploiement Web App `AKfycbxp2S…` (l'URL complète est dans `assets/js/config.js`),
-  **version 5** déployée. « Exécuter en tant que : Moi », « Accès : Tout le monde ».
+  **version 8** déployée. « Exécuter en tant que : Moi », « Accès : Tout le monde ».
 - **Branche** : `ccr-70deccce-a0w3wk` = branche par défaut du dépôt = branche publiée
   par GitHub Pages (dossier racine). Tout ce qui y est poussé est **en ligne ~30 s après**.
-- **Applications Android** (Flutter, `apps/`) : version 2.0.0, ouvrent le site GitHub.
+- **Applications Android** (Flutter, `apps/`) : version 2.0.0, ouvrent le site GitHub
+  (reprennent automatiquement le thème et les couleurs).
+- **Langues** : arabe (défaut, RTL), français, anglais, **italien** (ajouté le 2026-11-21).
 
 ## 3. Historique (ce qui a été fait, dans l'ordre)
 
@@ -74,6 +76,22 @@ Google Apps Script …/exec           (dossier apps-script/ : API JSON uniquemen
 7. **Vitesse admin** : mémoire de session uniquement (rien d'enregistré dans le navigateur),
    préchargement des sections principales, chargements en parallèle.
 8. Discussions sur l'IA (voir § 7) : **rien n'est encore construit**, en attente de décision.
+9. **Design du thème visiteur** (2026-11-21) : couleurs par catégorie (badge + numéro + lien),
+   bande verticale colorée à gauche des cartes catégories et services (une couleur par item),
+   bannières des pages catégorie/service colorées, bannière « Nouveaux arrivants » en dégradé,
+   numéros d'étapes colorés, **mode nuit** (fond bleu-ardoise ; auto selon le téléphone + bouton
+   soleil/lune coulissant dans l'en-tête, mémorisé par appareil, appliqué avant le 1er affichage),
+   et petite **animation au défilement** (apparition des cartes, désactivée si « réduire les
+   animations »). Tout côté site, **aucun changement backend**. Le mode nuit ne concerne **que**
+   le site visiteur (pas l'admin).
+10. **Italien (it)** ajouté (2026-11-21) : backend **version 8** (`APP.LANGS` + `it`, colonnes
+   `_it` générées par `setup`) ; interface italienne complète (`i18n.js` + `visitor/strings.js`) ;
+   « Italiano » dans le sélecteur. En attendant les traductions, le contenu bascule en **anglais**
+   pour un visiteur italien (pas en arabe). **Reste à faire par le propriétaire** : lancer `setup`
+   une fois (colonnes `_it`), puis saisir les textes italiens dans l'admin (voir § 7).
+11. **Tout le code remis sur GitHub** (2026-11-21) : le propriétaire a re-poussé `apps-script/`,
+   `apps/`, `tools/`, `MEMORY.md`. Le dépôt est de nouveau complet. `.gitignore` restauré
+   (ignore `build/`, clés `*.jks`, `key.properties`).
 
 Mesures (site en ligne) : accueil 1,2 s (avant 2–5 s) · catégorie 0,3 s · page service 0,4 s
 (avant 2–6 s) · guide 0,15 s · page déjà vue 0,07 s. Admin (test local, API à 3 s) : écrans
@@ -90,6 +108,16 @@ réouverture 3,4 s (avant 6 s) ; première connexion toujours ~6 s (deux appels 
   backend d'abord**, puis pousser le site — ou rendre le site compatible avec l'ancienne API
   (exemple : `publicFetch` dans `assets/js/ui.js` retombe sur `api_getService` si
   `api_getServicePage` n'existe pas). Pousser sur la branche = mise en ligne immédiate.
+- **Déployer le backend avec `clasp` = cloner le projet, PAS `apps-script/` du dépôt tel quel.**
+  Si on fait `clasp clone 15qMipz3…`, le `.clasp.json` cloné arrive avec `filePushOrder: []` et
+  des fichiers `.js`. Il FAUT : renommer les fichiers serveur en `.gs` et remettre
+  `filePushOrder: ["config/Config.gs", "config/Schema.gs"]` AVANT de pousser, sinon Apps Script
+  charge `Config` après `Authentication` → erreur `SECURITY ... undefined` et **l'API tombe**
+  (déjà arrivé le 2026-11-21, corrigé en version 8). Le `.clasp.json` du dépôt (`apps-script/`)
+  est déjà correct : préférer déployer depuis `apps-script/` plutôt qu'un clone frais.
+- **La source `apps-script/` du dépôt doit rester = au déploiement en ligne.** Le backend en
+  ligne est en **version 8** (avec l'italien). Avant tout `clasp push`, vérifier que
+  `apps-script/config/Config.gs` a bien `LANGS: ['ar','fr','en','it']`, sinon on régresse.
 - **Dépôt public** : jamais de secret, d'identifiant de Sheet/Drive, de mot de passe, d'e-mail
   personnel, ni de clé API dans le code, les commits ou ce fichier. Les secrets vont dans
   Apps Script → Paramètres du projet → Propriétés du script.
@@ -151,6 +179,13 @@ cd ..\admin   ; flutter build apk --release
 ## 7. Décisions en attente et prochaines étapes
 
 **À faire par le propriétaire**
+- [ ] **Italien — colonnes `_it`** : lancer `setup` UNE fois depuis l'éditeur Apps Script
+      (après avoir vérifié `SUPER_ADMIN_EMAIL`). Cela ajoute les colonnes `title_it`, etc. au
+      Sheet (additif, rien n'est effacé). Sans ça, l'admin affiche l'onglet IT mais ne
+      l'enregistre pas. `clasp run setup` ne marche pas sur ce projet (API exécutable non
+      configurée) → c'est au propriétaire de le lancer depuis l'éditeur.
+- [ ] **Italien — contenu** : saisir les textes italiens des services / FAQ / accueil dans
+      l'admin (petit à petit). En attendant, les visiteurs IT voient le contenu en anglais.
 - [ ] Ajouter la propriété du script `SUPER_ADMIN_EMAIL` (son adresse Google) dans le projet
       Apps Script `15qMipz3…` (sinon `setup` refuse de se lancer depuis l'éditeur).
 - [ ] Tester les APK 2.0.0 sur le téléphone (accueil, service, retour, demande avec pièce jointe ;
