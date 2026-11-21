@@ -180,3 +180,158 @@ html:not([dir="rtl"]) .icon.back-arrow { transform: scaleX(-1); }
 input[type=file].input { padding: var(--s3); }
 .receipt h2 { display: flex; gap: var(--s2); align-items: center; }
 .preview-flag { position: fixed; inset-block-start: 76px; inset-inline-end: 12px; z-index: 60; }
+
+/* ==========================================================================
+   Couleurs des catégories, bannières, et mode nuit (ajout — thème visiteur)
+   ========================================================================== */
+
+/* ---- Petites couleurs par catégorie (badge + numéro) --------------------- */
+[data-cat="01"] { --cat: #3B6FE0; }
+[data-cat="02"] { --cat: #0E9E8E; }
+[data-cat="03"] { --cat: #3DA35D; }
+[data-cat="04"] { --cat: #7A5AF8; }
+[data-cat="05"] { --cat: #C98A1E; }
+[data-cat="06"] { --cat: #E05268; }
+[data-cat="07"] { --cat: #2D7FF9; }
+[data-cat="08"] { --cat: #EC5BA6; }
+[data-cat="09"] { --cat: #0EA5B5; }
+[data-cat="10"] { --cat: #E8833A; }
+[data-cat="11"] { --cat: #9B51E0; }
+[data-cat="12"] { --cat: #4F7BC0; }
+[data-cat="13"] { --cat: #10B48A; }
+.cat-card .icon-badge {
+  color: var(--cat, var(--primary));
+  background: color-mix(in srgb, var(--cat, var(--primary)) 15%, var(--surface));
+}
+.cat-card .cat-code { color: var(--cat, var(--muted)); opacity: .85; }
+.cat-card .link { color: var(--cat, var(--primary)); }
+.cat-card:hover .icon-badge {
+  box-shadow: var(--raise-sm), 0 0 0 2px color-mix(in srgb, var(--cat, var(--primary)) 35%, transparent);
+}
+
+/* ---- Bannière « Nouveaux arrivants » colorée ----------------------------- */
+.guide-band {
+  background: linear-gradient(120deg, #12A585 0%, #2D7FF9 100%);
+  color: #fff; box-shadow: 0 16px 34px -12px rgba(45, 127, 249, .55);
+}
+.guide-band h2 { color: #fff; }
+.guide-band .muted { color: rgba(255, 255, 255, .88) !important; }
+.guide-band .icon-badge { background: rgba(255, 255, 255, .18); color: #fff; box-shadow: none; }
+.guide-band .btn-primary { --btn-bg: #fff; --btn-ink: #12406f; }
+.guide-band .btn-primary:hover { filter: brightness(.97); }
+
+/* ---- Numéros d'étapes colorés ------------------------------------------- */
+.steps .step:nth-child(1)::before { background: #2D7FF9; }
+.steps .step:nth-child(2)::before { background: #12A585; }
+.steps .step:nth-child(3)::before { background: #9B51E0; }
+.steps .step:nth-child(4)::before { background: #E8833A; }
+
+/* ---- Petite touche sur les services populaires --------------------------- */
+.popular .chip .icon { color: var(--accent); }
+
+/* ==========================================================================
+   MODE NUIT — fond repris de la maquette (bleu-ardoise foncé)
+   S'applique seulement au site visiteur (ce fichier n'est pas chargé par l'admin).
+   Automatique selon le téléphone, sauf si le visiteur a choisi (data-theme).
+   ========================================================================== */
+:root[data-theme="dark"] {
+  --bg: #363d4d; --surface: #363d4d;
+  --text: #e7ecf3; --muted: #a2b1c4;
+  --primary: #5d9ad0; --primary-ink: #0f263a; --secondary: #86aec1; --accent: #d8ab54;
+  --success: #4bbd96; --warning: #e0a54a; --error: #e88080;
+  --shadow-dark: rgba(0, 0, 0, .46); --shadow-light: rgba(255, 255, 255, .05);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #363d4d; --surface: #363d4d;
+    --text: #e7ecf3; --muted: #a2b1c4;
+    --primary: #5d9ad0; --primary-ink: #0f263a; --secondary: #86aec1; --accent: #d8ab54;
+    --success: #4bbd96; --warning: #e0a54a; --error: #e88080;
+    --shadow-dark: rgba(0, 0, 0, .46); --shadow-light: rgba(255, 255, 255, .05);
+  }
+}
+
+/* Réglages qui ne passent pas par les variables, repris en mode nuit. */
+:root[data-theme="dark"] .site-header,
+:root:not([data-theme="light"]) .site-header {
+  background: rgba(54, 61, 77, .9); box-shadow: 0 6px 18px rgba(0, 0, 0, .4);
+}
+:root[data-theme="dark"] .toast,
+:root:not([data-theme="light"]) .toast { background: #1b2230; }
+:root[data-theme="dark"] .skeleton,
+:root:not([data-theme="light"]) .skeleton { background: linear-gradient(90deg, #2f3542 25%, #3a4152 50%, #2f3542 75%); background-size: 200% 100%; }
+:root[data-theme="dark"] .media,
+:root:not([data-theme="light"]) .media { background: linear-gradient(135deg, #2f3646, #262c38); }
+:root[data-theme="dark"] .table tbody tr:hover td,
+:root:not([data-theme="light"]) .table tbody tr:hover td { background: rgba(255, 255, 255, .05); }
+/* Mode nuit forcé : la barre d'adresse suit aussi (voir le script dans index.html). */
+
+/* ---- Interrupteur clair / nuit (soleil ↔ lune, style maquette) ----------- */
+.theme-switch { background: none; border: 0; padding: 4px; margin: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; line-height: 0; }
+.theme-switch:focus-visible { outline: 3px solid var(--secondary); outline-offset: 2px; border-radius: var(--r-pill); }
+.ts-track {
+  position: relative; display: inline-block; width: 64px; height: 34px; border-radius: var(--r-pill);
+  background: var(--surface);
+  box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light);
+}
+.ts-ic { position: absolute; inset-block-start: 50%; transform: translateY(-50%); color: var(--muted); opacity: .5; line-height: 0; }
+.ts-ic .icon { width: 17px; height: 17px; }
+.ts-sun { inset-inline-start: 9px; }
+.ts-moon { inset-inline-end: 9px; }
+.ts-knob {
+  position: absolute; inset-block-start: 3px; inset-inline-start: 3px;
+  width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: #fff;
+  background: linear-gradient(145deg, #FFB64D, #F28C00);
+  box-shadow: 3px 3px 7px rgba(0,0,0,.3), -1px -1px 3px rgba(255,255,255,.45);
+  transition: inset-inline-start .28s var(--ease), background .28s var(--ease);
+}
+.ts-knob .icon { width: 17px; height: 17px; stroke-width: 2.1; }
+.theme-switch.is-dark .ts-knob {
+  inset-inline-start: 33px;
+  background: linear-gradient(145deg, #6E9CF3, #3B6FE0);
+}
+
+/* ==========================================================================
+   Bandes verticales colorées + bannières service colorées + animation scroll
+   ========================================================================== */
+
+/* ---- Bande verticale à gauche : cartes catégories (couleur de la catégorie) */
+.cat-card { position: relative; overflow: hidden; }
+.cat-card::before {
+  content: ''; position: absolute; inset-block: 0; inset-inline-start: 0; width: 6px;
+  background: var(--cat, var(--primary)); z-index: 3;
+}
+
+/* ---- Bande verticale à gauche : services d'une liste (une couleur par item) */
+.svc-item { position: relative; overflow: hidden; padding-inline-start: calc(var(--s4) + 6px); }
+.svc-item::before {
+  content: ''; position: absolute; inset-block: 0; inset-inline-start: 0; width: 6px;
+  background: var(--cat, var(--secondary));
+}
+.svc-list .svc-item:nth-child(8n+1) { --cat: #2D7FF9; }
+.svc-list .svc-item:nth-child(8n+2) { --cat: #12A585; }
+.svc-list .svc-item:nth-child(8n+3) { --cat: #9B51E0; }
+.svc-list .svc-item:nth-child(8n+4) { --cat: #E8833A; }
+.svc-list .svc-item:nth-child(8n+5) { --cat: #E05268; }
+.svc-list .svc-item:nth-child(8n+6) { --cat: #0EA5B5; }
+.svc-list .svc-item:nth-child(8n+7) { --cat: #C98A1E; }
+.svc-list .svc-item:nth-child(8n+8) { --cat: #4F7BC0; }
+.svc-item .icon { color: var(--cat, var(--secondary)); }
+
+/* ---- Bannière service / catégorie colorée (bande + badge teinté) ---------- */
+.page-head { position: relative; padding-inline-start: var(--s5); }
+.page-head::before {
+  content: ''; position: absolute; inset-block: 2px; inset-inline-start: 0; width: 6px;
+  border-radius: var(--r-pill); background: var(--cat, var(--primary));
+}
+.page-head .icon-badge {
+  color: var(--cat, var(--primary));
+  background: color-mix(in srgb, var(--cat, var(--primary)) 15%, var(--surface));
+}
+.page-head .head-cta .btn-primary { --btn-bg: var(--cat, var(--primary)); }
+
+/* ---- Petite animation à l'apparition au défilement ----------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal { opacity: 0; transform: translateY(16px); transition: opacity .55s var(--ease), transform .55s var(--ease); }
+  .reveal.in { opacity: 1; transform: none; }
+}
