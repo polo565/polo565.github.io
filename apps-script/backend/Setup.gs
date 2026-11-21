@@ -122,11 +122,11 @@ function setup_seed_() {
     db_insertMany_('GuidanceRules', seed_guideRuleRows_(svcBySlug));
     out.push('Seeded ' + SEED_GUIDE_RULES.length + ' guide rules');
   }
-  // Italian was removed from the platform: migrate the old language settings once.
+  // Keep the language settings in step with APP.LANGS (adds/removes 'it' etc.).
   var dl = db_get_('Settings', 'default_lang');
   if (dl && APP.LANGS.indexOf(String(dl.value)) < 0) { db_update_('Settings', 'default_lang', { value: APP.DEFAULT_LANG, description: 'ar | fr | en' }); out.push('default_lang set to ' + APP.DEFAULT_LANG); }
   var sl = db_get_('Settings', 'supported_langs');
-  if (sl && /"it"/.test(String(sl.value))) { db_update_('Settings', 'supported_langs', { value: JSON.stringify(APP.LANGS) }); out.push('supported_langs updated'); }
+  if (sl && String(sl.value) !== JSON.stringify(APP.LANGS)) { db_update_('Settings', 'supported_langs', { value: JSON.stringify(APP.LANGS) }); out.push('supported_langs updated'); }
   var existingKeys = db_all_('Settings').map(function (s) { return s.key; });
   var newSettings = SEED_SETTINGS.filter(function (s) { return existingKeys.indexOf(s.key) < 0; });
   if (newSettings.length) {
@@ -227,7 +227,7 @@ var SEED_SETTINGS = [
   { key: 'social_links', value: '[]', type: 'json', public: true, description: '[{"label":"Facebook","url":"https://…"}]' },
   { key: 'default_lang', value: 'ar', type: 'string', public: true, description: 'ar | fr | en' },
   { key: 'admin_lang', value: 'fr', type: 'string', public: false, description: 'Language of emails sent to administrators (ar | fr | en)' },
-  { key: 'supported_langs', value: '["ar","fr","en"]', type: 'json', public: true, description: 'Languages offered' },
+  { key: 'supported_langs', value: '["ar","fr","en","it"]', type: 'json', public: true, description: 'Languages offered' },
   { key: 'currency', value: 'EUR', type: 'string', public: true, description: 'Currency' },
   { key: 'registration_enabled', value: 'TRUE', type: 'bool', public: true, description: 'Allow optional visitor accounts' },
   { key: 'upload_retention_days', value: '90', type: 'number', public: false, description: 'Days before visitor uploads are deleted' },

@@ -8,7 +8,7 @@
 var APP = Object.freeze({
   NAME: 'HAMDI ITALIE',
   VERSION: '0.2.0',
-  LANGS: ['ar', 'fr', 'en'],
+  LANGS: ['ar', 'fr', 'en', 'it'],
   DEFAULT_LANG: 'ar',
   RTL_LANGS: ['ar'],
 });
