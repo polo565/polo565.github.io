@@ -1,0 +1,17 @@
+# Flutter / Android build outputs (générés — ne pas versionner)
+apps/**/build/
+apps/**/.dart_tool/
+apps/**/.gradle/
+apps/**/local.properties
+
+# Clés de signature et secrets (ne JAMAIS versionner)
+apps/**/android/key.properties
+*.apk
+*.jks
+*.keystore
+
+# Éditeur
+.vscode/
+
+# Garder les APK publiés dans apk/ (exception à *.apk ci-dessus)
+!apk/*.apk

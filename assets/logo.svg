@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="HAMDI CAF">
+  <rect width="64" height="64" rx="16" fill="#244B68"/>
+  <rect x="10" y="46" width="14.7" height="4" rx="2" fill="#36866C"/>
+  <rect x="24.7" y="46" width="14.6" height="4" fill="#E9EDF3"/>
+  <rect x="39.3" y="46" width="14.7" height="4" rx="2" fill="#C45A5A"/>
+  <text x="32" y="38" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="#E9EDF3">HC</text>
+</svg>
